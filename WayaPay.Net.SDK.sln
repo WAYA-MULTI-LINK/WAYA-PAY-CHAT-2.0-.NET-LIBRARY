@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31515.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WayaPay.Net.SDK", "WayaPay.Net.SDK\WayaPay.Net.SDK.csproj", "{BCC65107-2272-47D6-865A-D2D74927AE0E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WayaTest", "WayaTest\WayaTest.csproj", "{856EE965-77F5-49C1-9FC2-73C245218A08}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BCC65107-2272-47D6-865A-D2D74927AE0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCC65107-2272-47D6-865A-D2D74927AE0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCC65107-2272-47D6-865A-D2D74927AE0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCC65107-2272-47D6-865A-D2D74927AE0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{856EE965-77F5-49C1-9FC2-73C245218A08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{856EE965-77F5-49C1-9FC2-73C245218A08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{856EE965-77F5-49C1-9FC2-73C245218A08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{856EE965-77F5-49C1-9FC2-73C245218A08}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2AF11C1B-461F-4718-A495-0B1C27CAAEF3}
+	EndGlobalSection
+EndGlobal
