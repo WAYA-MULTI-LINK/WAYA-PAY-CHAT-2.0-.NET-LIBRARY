@@ -1,0 +1,11 @@
+/Users/mustaphasemilore/Desktop/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/WayaPay.Net.SDK/obj/Release/netstandard2.1/WayaPay.Net.SDK.GeneratedMSBuildEditorConfig.editorconfig
+/Users/mustaphasemilore/Desktop/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/WayaPay.Net.SDK/obj/Release/netstandard2.1/WayaPay.Net.SDK.AssemblyInfoInputs.cache
+/Users/mustaphasemilore/Desktop/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/WayaPay.Net.SDK/obj/Release/netstandard2.1/WayaPay.Net.SDK.AssemblyInfo.cs
+/Users/mustaphasemilore/Desktop/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/WayaPay.Net.SDK/obj/Release/netstandard2.1/WayaPay.Net.SDK.csproj.CoreCompileInputs.cache
+/Users/mustaphasemilore/Desktop/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/WayaPay.Net.SDK/obj/Release/netstandard2.1/WayaPay.Net.SDK.sourcelink.json
+/Users/mustaphasemilore/Desktop/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/WayaPay.Net.SDK/obj/Release/netstandard2.1/WayaPay.Net.SDK.csproj.AssemblyReference.cache
+/Users/mustaphasemilore/Desktop/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/WayaPay.Net.SDK/bin/Release/netstandard2.1/WayaPay.Net.SDK.deps.json
+/Users/mustaphasemilore/Desktop/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/WayaPay.Net.SDK/bin/Release/netstandard2.1/WayaPay.Net.SDK.dll
+/Users/mustaphasemilore/Desktop/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/WayaPay.Net.SDK/bin/Release/netstandard2.1/WayaPay.Net.SDK.pdb
+/Users/mustaphasemilore/Desktop/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/WayaPay.Net.SDK/obj/Release/netstandard2.1/WayaPay.Net.SDK.dll
+/Users/mustaphasemilore/Desktop/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/WayaPay.Net.SDK/obj/Release/netstandard2.1/WayaPay.Net.SDK.pdb
