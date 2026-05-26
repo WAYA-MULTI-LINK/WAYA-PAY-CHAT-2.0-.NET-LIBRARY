@@ -1,100 +1,184 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
+﻿using System.Net.Http.Json;
 using System.Text;
-using System.Threading.Tasks;
-using WayaPay.Net.SDK.Interface;
-using WayaPay.Net.SDK.Model;
+using System.Text.Json;
+using WayaPay.DotNetSdk.Models;
 
-namespace WayaPay.Net.SDK.Transaction
+namespace WayaPay.DotNetSdk;
+
+public class WayaPayClient
 {
-    public class WayaPayTransaction : IWayaPayTransaction
+    private readonly HttpClient _httpClient;
+    private readonly string _baseUrl;
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        bool _isProduction;
-        string _merchatID;
-        string _publicKey;
-        public WayaPayTransaction(string merchantID, string publicKey,bool isProduction = false)
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
+    };
+
+    public WayaPayClient(WayaPayOptions options, HttpClient? httpClient = null)
+    {
+        if (string.IsNullOrWhiteSpace(options.MerchantId))
+            throw new ArgumentException("MerchantId is required");
+
+        if (string.IsNullOrWhiteSpace(options.PublicKey))
+            throw new ArgumentException("PublicKey is required");
+
+        if (string.IsNullOrWhiteSpace(options.Environment))
+            throw new ArgumentException("Environment is required");
+
+        var isProd = options.Environment.Trim().ToLower() is "production" or "prod";
+
+        _baseUrl = isProd
+            ? "https://services.wayapay.ng"
+            : "https://services.staging.wayapay.ng";
+
+        _httpClient = httpClient ?? new HttpClient();
+
+        _httpClient.DefaultRequestHeaders.Clear();
+        _httpClient.DefaultRequestHeaders.Add("Merchant-ID", options.MerchantId);
+        _httpClient.DefaultRequestHeaders.Add("API-Secret-Key", options.PublicKey);
+    }
+
+    public Task<Dictionary<string, object>?> InitializePaymentAsync(
+        InitializePaymentRequest request
+    )
+    {
+        if (string.IsNullOrWhiteSpace(request.Currency))
+            return ValidationError("currency is required");
+
+        if (request.Amount <= 0)
+            return ValidationError("amount is required");
+
+        if (string.IsNullOrWhiteSpace(request.CallBackUrl))
+            return ValidationError("callBackUrl is required");
+
+        if (string.IsNullOrWhiteSpace(request.IdempotencyKey))
+            return ValidationError("idempotencyKey is required");
+
+        if (string.IsNullOrWhiteSpace(request.PaymentRef))
+            return ValidationError("paymentRef is required");
+
+        if (request.Metadata == null)
+            return ValidationError("metadata is required");
+
+        if (string.IsNullOrWhiteSpace(request.Metadata.FirstName))
+            return ValidationError("metadata.firstName is required");
+
+        if (string.IsNullOrWhiteSpace(request.Metadata.LastName))
+            return ValidationError("metadata.lastName is required");
+
+        if (string.IsNullOrWhiteSpace(request.Metadata.PhoneNumber))
+            return ValidationError("metadata.phoneNumber is required");
+
+        if (string.IsNullOrWhiteSpace(request.Metadata.EmailAddress))
+            return ValidationError("metadata.emailAddress is required");
+
+        return SendAsync(HttpMethod.Post, "/payment-collect/initiate", request);
+    }
+
+    public Task<Dictionary<string, object>?> InitiatePayoutAsync(
+        InitiatePayoutRequest request
+    )
+    {
+        if (string.IsNullOrWhiteSpace(request.Currency))
+            return ValidationError("currency is required");
+
+        if (request.Amount <= 0)
+            return ValidationError("amount is required");
+
+        if (string.IsNullOrWhiteSpace(request.IdempotencyKey))
+            return ValidationError("idempotencyKey is required");
+
+        if (string.IsNullOrWhiteSpace(request.BankCode))
+            return ValidationError("bankCode is required");
+
+        if (string.IsNullOrWhiteSpace(request.AccountNumber))
+            return ValidationError("accountNumber is required");
+
+        return SendAsync(HttpMethod.Post, "/payment-payout/initiate", request);
+    }
+
+    public Task<Dictionary<string, object>?> VerifyTransactionAsync(
+        string transactionRef
+    )
+    {
+        if (string.IsNullOrWhiteSpace(transactionRef))
+            return ValidationError("transactionRef is required");
+
+        var endpoint = $"/payment/transaction?ref={Uri.EscapeDataString(transactionRef)}";
+
+        return SendAsync(HttpMethod.Get, endpoint);
+    }
+
+    public Task<Dictionary<string, object>?> FetchBankListAsync()
+    {
+        return SendAsync(HttpMethod.Get, "/banks-list");
+    }
+
+    public Task<Dictionary<string, object>?> VerifyAccountAsync(
+        VerifyAccountRequest request
+    )
+    {
+        if (string.IsNullOrWhiteSpace(request.AccountNumber))
+            return ValidationError("accountNumber is required");
+
+        if (string.IsNullOrWhiteSpace(request.BankCode))
+            return ValidationError("bankCode is required");
+
+        return SendAsync(HttpMethod.Get, "/account-verification", request);
+    }
+
+    private async Task<Dictionary<string, object>?> SendAsync(
+        HttpMethod method,
+        string endpoint,
+        object? body = null
+    )
+    {
+        var request = new HttpRequestMessage(method, _baseUrl + endpoint);
+
+        request.Headers.Add("Accept", "application/json");
+
+        if (body != null)
         {
-            _isProduction = isProduction;
-            _merchatID = merchantID;
-            _publicKey = publicKey;
+            var json = JsonSerializer.Serialize(body, JsonOptions);
+
+            request.Content = new StringContent(
+                json,
+                Encoding.UTF8,
+                "application/json"
+            );
         }
-        public async Task<InitilizationResponse> InitiateTransfer(string amount, string description , string customerName , string customerEmail, string customerPhoneNumber,int currency = 566, int fee = 1)
+
+        var response = await _httpClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(content))
         {
-            var client = HttpConnection.CreateClient(this._isProduction);
-            var initilizationRequest = new InitilizeRequest
+            return new Dictionary<string, object>
             {
-                Description = description,
-                Fee = fee,
-                Amount = amount,
-                Currency = currency,
-                MerchantId = _merchatID,
-                WayaPublicKey = _publicKey,
-                Customer = new CustomerDetails
-                {
-                    Email = customerEmail,
-                    Name = customerName,
-                    phoneNumber = customerPhoneNumber
-                }
+                ["status"] = response.IsSuccessStatusCode,
+                ["message"] = response.IsSuccessStatusCode
+                    ? "Request completed successfully"
+                    : "Request failed",
+                ["code"] = (int)response.StatusCode
             };
-            var body = JsonConvert.SerializeObject(initilizationRequest);
-            var data = new StringContent(JsonConvert.SerializeObject(initilizationRequest), Encoding.UTF8, "application/json");
-            var response = await client.PostAsync(BaseConstants.WayPayInitializeTransactionEndPoint, data);
-            var json = await response.Content.ReadAsStringAsync();
-            var resp = JsonConvert.DeserializeObject<InitilizeResponse>(json);
-
-            if(resp.Data == null)
-            {
-                return new InitilizationResponse
-                {
-                    TimeStamp = resp.TimeStamp,
-                    Status = resp.Status,
-                    Message = resp.Message,
-                };
-            }
-
-            if (resp.Status && !string.IsNullOrWhiteSpace(resp.Data.TranId))
-            {
-
-                return new InitilizationResponse
-                {
-                    TimeStamp = resp.TimeStamp,
-                    Status = resp.Status,
-                    Message = resp.Message,
-                    Data = new SubData
-                    {
-                        Authorization_url = _isProduction ? BaseConstants.WapPayFrontEndProduction.Replace("{TranID}", resp.Data.TranId) : BaseConstants.WapPayFrontEndStaging.Replace("{TranID}", resp.Data.TranId),
-                        CustomerAvoid = resp.Data.CustomerAvoid,
-                        CustomerId = resp.Data.CustomerId,
-                        Name = resp.Data.Name,
-                        TranId = resp.Data.TranId
-                    }
-                };
-            }
-            else
-            {
-                return new InitilizationResponse
-                {
-                    TimeStamp = resp.TimeStamp,
-                    Status = resp.Status,
-                    Message = resp.Message,
-                };
-            }
-            
         }
 
+        return JsonSerializer.Deserialize<Dictionary<string, object>>(
+            content,
+            JsonOptions
+        );
+    }
 
-
-        public async Task<VerifyTransactionResponse> Verify(string transactionID)
-        {
-            var url = $"{BaseConstants.WayPayTransactionVerificationEndPoint}/{transactionID}";
-            var client = HttpConnection.CreateClient(this._isProduction);
-            var response = await client.GetAsync($"{BaseConstants.WayPayTransactionVerificationEndPoint}/{transactionID}");
-
-            var json = await response.Content.ReadAsStringAsync();
-
-            return JsonConvert.DeserializeObject<VerifyTransactionResponse>(json);
-        }
+    private static Task<Dictionary<string, object>?> ValidationError(string message)
+    {
+        return Task.FromResult<Dictionary<string, object>?>(
+            new Dictionary<string, object>
+            {
+                ["status"] = false,
+                ["message"] = message
+            }
+        );
     }
 }
