@@ -1,169 +1,207 @@
-# WayaPay .NET SDK
+# WayaPay (.NET)
 
-Official .NET SDK for the [WayaPay](https://wayapay.ng) payment gateway. Accept payments, initiate payouts, verify accounts, and more — all in a few lines of C#.
+.NET client for the **WayaPay Merchant API v2**. Collect, payout, accounts, identity, and reconciliation in one library. Targets `net8.0`, depends on nothing outside the framework.
 
----
-
-## Installation
-
-```bash
-dotnet add package Wayapay
-```
-
-Or via the NuGet Package Manager in Visual Studio — search for `Wayapay`.
-
----
+This is a **server side** library. Your secret key lives here and only here. Never ship it to a browser, a mobile app, or a public repo. A leaked key is a wallet with the PIN on the back.
 
 ## Requirements
 
-- .NET Standard 2.1 or higher
-- .NET 6 / 7 / 8 (fully supported)
+.NET 8.0 or newer.
 
----
+## Install
 
-## Quick Start
+```bash
+dotnet add package WayaPay
+```
+
+Or reference the project directly:
+
+```bash
+dotnet add reference path/to/WayaPay.csproj
+```
+
+## Quickstart
 
 ```csharp
-using WayaPay.DotNetSdk;
-using WayaPay.DotNetSdk.Models;
+using WayaPay;
 
 var client = new WayaPayClient(new WayaPayOptions
 {
-    MerchantId  = "your-merchant-id",
-    PublicKey   = "your-api-secret-key",
-    Environment = "test" // or "production"
+    MerchantId = "MER_...",                 // from the dashboard
+    SecretKey  = "WAYASECK_TEST_...",        // WAYASECK_... on live
+    Environment = "staging",                 // "staging" or "production"
 });
+
+var banks = await client.Banks.ListAsync();
 ```
 
----
+Test against `staging` until your integration is steady, then change one word to `production`. The rest of your code stays the same.
 
-## Usage
+## What you get back
 
-### Initialize Payment
-
-Starts a payment collection and returns a transaction ID you redirect your customer to.
+Every method returns the envelope's `data`, already deserialized into a typed record. Success, code, and timestamp only matter when something fails, and failures throw. So the happy path stays clean and strongly typed:
 
 ```csharp
-var response = await client.InitializePaymentAsync(new InitializePaymentRequest
-{
-    Currency       = "NGN",
-    Amount         = 5000,
-    CallBackUrl    = "https://yoursite.com/callback",
-    IdempotencyKey = Guid.NewGuid().ToString(),
-    PaymentRef     = "ORDER-001",
-    Metadata = new PaymentMetadata
-    {
-        FirstName    = "John",
-        LastName     = "Doe",
-        PhoneNumber  = "08012345678",
-        EmailAddress = "john@example.com",
-        CancelUrl    = "https://yoursite.com/cancel"
-    }
-});
-```
-
----
-
-### Initiate Payout
-
-Sends funds from your merchant balance to a bank account. Always verify the account first.
-
-```csharp
-var response = await client.InitiatePayoutAsync(new InitiatePayoutRequest
-{
-    Currency       = "NGN",
-    Amount         = 10000,
-    IdempotencyKey = Guid.NewGuid().ToString(),
-    BankCode       = "044",
-    AccountNumber  = "0123456789"
-});
-```
-
----
-
-### Verify Transaction
-
-Retrieves the current status of a transaction by its reference.
-
-```csharp
-var response = await client.VerifyTransactionAsync("your-transaction-ref");
-```
-
----
-
-### Fetch Bank List
-
-Returns all supported banks and their codes. Use these codes for payouts and account verification.
-
-```csharp
-var response = await client.FetchBankListAsync();
-```
-
----
-
-### Verify Account
-
-Resolves an account number and returns the registered account name. Always call this before initiating a payout.
-
-```csharp
-var response = await client.VerifyAccountAsync(new VerifyAccountRequest
+var acct = await client.Accounts.VerifyAsync(new VerifyAccountInput
 {
     AccountNumber = "0123456789",
-    BankCode      = "044"
+    BankCode = "044",
 });
+Console.WriteLine(acct.AccountName); // typed, with IDE autocomplete
 ```
 
----
+## API
 
-## Environments
-
-| Value | Description |
-|---|---|
-| `test` | Staging environment for development |
-| `production` or `prod` | Live environment for real transactions |
-
----
-
-## Error Handling
-
-Every method returns a `Dictionary<string, object>` response. Always check the `status` field before proceeding.
+### Banks
 
 ```csharp
-var response = await client.VerifyTransactionAsync("ref-001");
+List<Bank> banks = await client.Banks.ListAsync();
+```
 
-if (response != null && response["status"] is true)
+### Accounts
+
+```csharp
+// Resolve an account number to its registered name
+var result = await client.Accounts.VerifyAsync(new VerifyAccountInput
 {
-    // success — use response["data"]
-}
-else
+    AccountNumber = "0123456789",
+    BankCode = "044",          // omit only when EnquiryType is "WAYABANK"
+    EnquiryType = "OTHERS",    // default
+});
+
+// Mint a virtual NUBAN account for an order or customer
+var vacct = await client.Accounts.CreateDynamicAsync(new CreateDynamicAccountInput
 {
-    // failed — check response["message"]
-    Console.WriteLine(response?["message"]);
+    AccountName = "ORDER-7821 PAYMENT",
+    CustomerId = "CUST-98765",
+    ReferenceId = "ORDER-7821",  // auto generated if left null
+    Purpose = "Order payment",
+    // Mode defaults to "ONE_TIME"
+});
+// Hand vacct.VirtualAccountNumber to the customer
+```
+
+### Identity
+
+```csharp
+var bvn = await client.Identity.VerifyBvnAsync("22212345678"); // 11 digits, validated locally
+// treat anything other than "False" on bvn.WatchListed with care
+```
+
+### Payouts
+
+```csharp
+var payout = await client.Payouts.InitiateAsync(new PayoutInput
+{
+    Amount = 25000m,
+    AccountNumber = "0123456789",
+    BankCode = "058",
+    AccountName = "JOHN DOE",     // match the verified name
+    Narration = "Salary May 2026",
+    // Currency defaults to "NGN", Reference auto generated if left null
+});
+// PROCESSING means accepted, not settled. Verify with the reference below.
+```
+
+### Collect
+
+```csharp
+var link = await client.Collect.CreateAsync(new CollectInput
+{
+    PaymentLinkName = "Order #1234",
+    Description = "Order #1234 - 2 items",
+    PayableAmount = 1500m,
+    RedirectLink = "https://merchant.example.com/callback",
+    // PaymentLinkType defaults to "ONE_TIME_PAYMENT_LINK", Currency to "NGN"
+});
+// Send the customer to link.ShortUrl. Keep link.PaymentLinkReference to reconcile.
+```
+
+If you set `LinkCanExpire = true`, you must also pass `ExpiryDate`. The library enforces it before the call leaves your server.
+
+### Transactions
+
+```csharp
+// Verify one transaction
+var txn = await client.Transactions.VerifyAsync("WQ-TXN-9F8E7D6C");
+// txn.Status == "SUCCESS" means settled
+
+// One page of history
+var page = await client.Transactions.HistoryAsync(new HistoryFilter
+{
+    Page = 0, Size = 20, Status = "SUCCESS",
+    From = "2026-05-01T00:00:00Z", To = "2026-05-24T00:00:00Z",
+});
+
+// Or stream every matching transaction across all pages (built for reconciliation)
+await foreach (var t in client.Transactions.HistoryAllAsync(new HistoryFilter { Status = "SUCCESS" }))
+{
+    // process t, the SDK walks the pages for you lazily
 }
 ```
 
----
+## Required fields are compile time
 
-## Using a Custom HttpClient
+Input records use C# `required` members, so leaving out a mandatory field is a build error, not a runtime surprise. Conditional and format rules that the type system cannot express (BankCode when not WAYABANK, an 11 digit BVN, ExpiryDate when LinkCanExpire is true) are validated locally and throw **before** any network call, so a bad input never burns a request.
 
-You can inject your own `HttpClient` instance — useful for testing or when you need custom timeout and retry policies.
+## References
+
+In v2, the unique reference you supply is your dedup and reconciliation key. Generate a fresh one per logical operation so retries map to the original record instead of spawning duplicates. The library auto fills it on payouts and dynamic accounts when you leave it null, or generate your own:
 
 ```csharp
-var httpClient = new HttpClient
+var reference = WayaPayClient.GenerateReference("PAYOUT"); // PAYOUT-1748160000000-A1B2C3D4
+```
+
+## Errors
+
+Everything that fails throws a `WayaPayException`. Branch on `Type` for category and `ErrorCode` for the WayaPay code.
+
+```csharp
+try
 {
-    Timeout = TimeSpan.FromSeconds(30)
+    await client.Payouts.InitiateAsync(input);
+}
+catch (WayaPayException e)
+{
+    e.Type;       // WayaPayErrorType.Api | Validation | Network | Timeout | Config
+    e.ErrorCode;  // WayaPay code, e.g. "07". null when not an API error.
+    e.Status;     // HTTP status when known
+    e.Message;    // human readable
+    e.Raw;        // raw body or underlying error, for your logs
+}
+```
+
+## Timeouts and retries
+
+Set on the options:
+
+```csharp
+new WayaPayOptions
+{
+    MerchantId = "...", SecretKey = "...",
+    TimeoutMs = 30_000,
+    MaxRetries = 2,
 };
-
-var client = new WayaPayClient(new WayaPayOptions
-{
-    MerchantId  = "your-merchant-id",
-    PublicKey   = "your-api-secret-key",
-    Environment = "test"
-}, httpClient);
 ```
 
----
+Retries apply to **GET only** (bank list, verify, history) and only on timeouts, network errors, 429, or 5xx, with exponential backoff. Writes (payout, collect, dynamic account, BVN) never auto retry, because retrying a write you are unsure about is how you pay someone twice. Retry those yourself, with the same reference, once you have checked the transaction status. Every method also takes a `CancellationToken`.
 
-## License
+## Dependency injection and testing
 
-MIT
+Inject your own `HttpClient` to plug into `IHttpClientFactory`, add handler chains, or swap in a fake for tests. When you supply one it is used as is and never disposed.
+
+```csharp
+services.AddSingleton(sp => new WayaPayClient(new WayaPayOptions
+{
+    MerchantId = config["WayaPay:MerchantId"]!,
+    SecretKey  = config["WayaPay:SecretKey"]!,
+    Environment = "production",
+    HttpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("wayapay"),
+}));
+```
+
+In unit tests, back that `HttpClient` with a stub `HttpMessageHandler` and assert on the requests without touching the network.
+
+## Before you go live
+
+On the merchant dashboard: finish KYC, grab your Merchant ID, generate your secret key under Settings then API Keys and Webhooks, whitelist your server IPs, and configure payment preferences. Payment Collect will refuse to work until the last two are done.
