@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using WayaPay.Resources;
+using WayaPay.Services;
 
 namespace WayaPay;
 
@@ -17,7 +17,6 @@ public sealed class WayaPayClient : IDisposable
 {
     private static readonly Dictionary<string, string> Environments = new()
     {
-        ["staging"] = "https://services.staging.wayapay.ng/merchant-middleware/api/v2",
         ["production"] = "https://services.wayapay.ng/merchant-middleware/api/v2",
     };
 

@@ -1,4 +1,4 @@
-namespace WayaPay.Resources;
+namespace WayaPay.Services;
 
 public sealed class Payouts
 {

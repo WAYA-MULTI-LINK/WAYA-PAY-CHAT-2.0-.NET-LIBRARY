@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace WayaPay.Resources;
+namespace WayaPay.Services;
 
 public sealed partial class Identity
 {

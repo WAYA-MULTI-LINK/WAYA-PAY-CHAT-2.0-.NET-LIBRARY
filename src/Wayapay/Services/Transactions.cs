@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace WayaPay.Resources;
+namespace WayaPay.Services;
 
 public sealed class Transactions
 {
