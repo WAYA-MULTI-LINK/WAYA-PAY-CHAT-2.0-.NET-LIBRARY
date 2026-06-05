@@ -1,8 +1,5 @@
-// Sample usage. This file is excluded from the library build (see WayaPay.csproj).
-// Drop it into a console project that references WayaPay to run it.
-//
-//   var merchantId = Environment.GetEnvironmentVariable("WAYA_MERCHANT_ID")!;
-//   var secretKey  = Environment.GetEnvironmentVariable("WAYA_SECRET_KEY")!;
+// Run with:
+//   WAYA_MERCHANT_ID=MER_... WAYA_SECRET_KEY=WAYASECK_TEST_... dotnet run
 
 using WayaPay;
 
@@ -10,7 +7,7 @@ var client = new WayaPayClient(new WayaPayOptions
 {
     MerchantId = Environment.GetEnvironmentVariable("WAYA_MERCHANT_ID")!,
     SecretKey = Environment.GetEnvironmentVariable("WAYA_SECRET_KEY")!,
-    Environment = "staging", // flip to "production" when steady
+    Environment = "staging",
 });
 
 try
@@ -63,11 +60,11 @@ try
     });
     Console.WriteLine($"Send customer to: {link.ShortUrl}");
 
-    // 7. Verify a transaction. Trust status, not your own assumptions.
+    // 7. Verify a transaction
     var txn = await client.Transactions.VerifyAsync(payout.PayoutReference);
     Console.WriteLine($"Txn status: {txn.Status}");
 
-    // 8. Reconcile every successful transaction in a window, one stream
+    // 8. Reconcile every successful transaction in a window
     var count = 0;
     await foreach (var t in client.Transactions.HistoryAllAsync(new HistoryFilter
     {
@@ -83,5 +80,5 @@ try
 catch (WayaPayException e)
 {
     Console.Error.WriteLine($"[{e.Type}] code={e.ErrorCode} status={e.Status} :: {e.Message}");
-    System.Environment.Exit(1);
+    Environment.Exit(1);
 }
