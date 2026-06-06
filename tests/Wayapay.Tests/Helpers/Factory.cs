@@ -8,12 +8,11 @@ namespace Wayapay.Tests.Helpers;
 
 internal static class Factory
 {
-    internal static WayaPayClient Client(HttpMessageHandler handler, string env = "production") =>
+    internal static WayaPayClient Client(HttpMessageHandler handler) =>
         new(new WayaPayOptions
         {
             MerchantId  = "MER_TEST",
             SecretKey   = "WAYASECK_TEST_key",
-            Environment = env,
             HttpClient  = new HttpClient(handler),
         });
 

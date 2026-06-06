@@ -15,11 +15,7 @@ namespace WayaPay;
 /// </summary>
 public sealed class WayaPayClient : IDisposable
 {
-    private static readonly Dictionary<string, string> Environments = new()
-    {
-        ["production"] = "https://services.wayapay.ng/merchant-middleware/api/v2",
-        ["staging"]    = "https://services.staging.wayapay.ng/merchant-middleware/api/v2",
-    };
+    private const string ProductionBaseUrl = "https://services.wayapay.ng/merchant-middleware/api/v2";
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
@@ -48,19 +44,17 @@ public sealed class WayaPayClient : IDisposable
             throw new ArgumentException("SecretKey is required.", nameof(options));
 
         _merchantId = options.MerchantId;
-        _secretKey  = options.SecretKey;
-        _timeout    = TimeSpan.FromMilliseconds(options.TimeoutMs);
-        MaxRetries  = options.MaxRetries;
+        _secretKey = options.SecretKey;
+        _timeout = TimeSpan.FromMilliseconds(options.TimeoutMs);
+        MaxRetries = options.MaxRetries;
 
-        var baseUrl = options.BaseUrl
-            ?? (Environments.TryGetValue(options.Environment, out var env) ? env : Environments["production"]);
-        BaseUrl = baseUrl.TrimEnd('/');
+        BaseUrl = (options.BaseUrl ?? ProductionBaseUrl).TrimEnd('/');
 
-        _http      = options.HttpClient ?? new HttpClient();
-        _ownsHttp  = options.HttpClient is null;
+        _http = options.HttpClient ?? new HttpClient();
+        _ownsHttp = options.HttpClient is null;
 
-        Identity   = new Identity(this);
-        Payouts    = new Payouts(this);
+        Identity = new Identity(this);
+        Payouts = new Payouts(this);
         Collection = new Collection(this);
     }
 
@@ -72,10 +66,10 @@ public sealed class WayaPayClient : IDisposable
         IReadOnlyDictionary<string, string?>? query = null,
         CancellationToken cancellationToken = default)
     {
-        var url      = BuildUrl(path, query);
+        var url = BuildUrl(path, query);
         var retryable = method == HttpMethod.Get;
-        var ceiling  = retryable ? MaxRetries : 0;
-        var attempt  = 0;
+        var ceiling = retryable ? MaxRetries : 0;
+        var attempt = 0;
 
         while (true)
         {
@@ -94,8 +88,8 @@ public sealed class WayaPayClient : IDisposable
             timeoutCts.CancelAfter(_timeout);
 
             string raw;
-            int    status;
-            bool   ok;
+            int status;
+            bool ok;
 
             try
             {
@@ -103,8 +97,8 @@ public sealed class WayaPayClient : IDisposable
                     .SendAsync(request, HttpCompletionOption.ResponseContentRead, timeoutCts.Token)
                     .ConfigureAwait(false);
                 status = (int)response.StatusCode;
-                ok     = response.IsSuccessStatusCode;
-                raw    = await response.Content.ReadAsStringAsync(timeoutCts.Token).ConfigureAwait(false);
+                ok = response.IsSuccessStatusCode;
+                raw = await response.Content.ReadAsStringAsync(timeoutCts.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
@@ -156,7 +150,7 @@ public sealed class WayaPayClient : IDisposable
     /// </summary>
     public static string GenerateReference(string prefix = "WP")
     {
-        var ms  = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var ms = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var hex = Convert.ToHexString(RandomNumberGenerator.GetBytes(4));
         return $"{prefix}-{ms}-{hex}";
     }
