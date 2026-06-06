@@ -226,3 +226,19 @@ In unit tests, back that `HttpClient` with a stub `HttpMessageHandler` and asser
 ## Before you go live
 
 On the merchant dashboard: finish KYC, grab your Merchant ID, generate your secret key under Settings → API Keys and Webhooks, and whitelist your server IPs. Swap your `WAYASECK_TEST_...` key for `WAYASECK_PROD_...` — the rest of your code stays the same.
+
+
+# Run all tests
+dotnet test tests/Wayapay.Tests/Wayapay.Tests.csproj
+
+# Run with output (see each test name)
+dotnet test tests/Wayapay.Tests/Wayapay.Tests.csproj --logger "console;verbosity=normal"
+
+# Run a specific folder/class
+dotnet test --filter "FullyQualifiedName~Wayapay.Tests.Payouts"
+dotnet test --filter "FullyQualifiedName~Wayapay.Tests.Identity"
+dotnet test --filter "FullyQualifiedName~Wayapay.Tests.Collection"
+dotnet test --filter "FullyQualifiedName~Wayapay.Tests.Client"
+
+# Run a single test by name
+dotnet test --filter "DisplayName~ReturnsCheckoutUrl_OnSuccess"
