@@ -1,3 +1,5 @@
+using WayaPay.Models.Payout;
+
 namespace WayaPay.Services;
 
 public sealed class Payouts
@@ -6,40 +8,41 @@ public sealed class Payouts
 
     internal Payouts(WayaPayClient client) => _client = client;
 
-    /// <summary>GET /account-enquiry/get-bank-list</summary>
-    public async Task<List<Bank>> ListAsync(CancellationToken cancellationToken = default) =>
-        await _client.RequestAsync<List<Bank>>(
-                HttpMethod.Get, "/account-enquiry/get-bank-list", cancellationToken: cancellationToken)
-            .ConfigureAwait(false) ?? new List<Bank>();
-    
+    /// <summary>GET /get-bank-list. Returns all supported banks and their CBN codes.</summary>
+    public async Task<List<PayoutBankResponseModel>> ListBanksAsync(CancellationToken cancellationToken = default) =>
+        await _client.RequestAsync<List<PayoutBankResponseModel>>(
+                HttpMethod.Get, "/get-bank-list", cancellationToken: cancellationToken)
+            .ConfigureAwait(false) ?? [];
+
     /// <summary>
-    /// POST /account-enquiry/verify-account.
-    /// BankCode is required for OTHERS, optional for WAYABANK.
+    /// POST /verify-account. Resolves an account number to its registered name.
+    /// BankCode is required when EnquiryType is "OTHERS". Always call this before initiating a payout.
     /// </summary>
-    public async Task<VerifyAccountResult> VerifyAsync(VerifyAccountInput input, CancellationToken cancellationToken = default)
+    public async Task<PayoutVerifyResponseModel> VerifyAccountAsync(PayoutVerifyRequestModel input,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
-        if (input.EnquiryType != "WAYABANK" && string.IsNullOrEmpty(input.BankCode))
-            throw WayaPayClient.Missing("bankCode", "account verification (external bank)");
+        if (input.EnquiryType == "OTHERS" && string.IsNullOrEmpty(input.BankCode))
+            throw new ArgumentException("BankCode is required when EnquiryType is \"OTHERS\".", nameof(input));
 
-        return await _client.RequestAsync<VerifyAccountResult>(
-                HttpMethod.Post, "/account-enquiry/verify-account", input, cancellationToken: cancellationToken)
-            .ConfigureAwait(false) ?? throw WayaPayClient.EmptyData("/account-enquiry/verify-account");
+        return await _client.RequestAsync<PayoutVerifyResponseModel>(
+                HttpMethod.Post, "/verify-account", input, cancellationToken: cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException("Empty response data from /verify-account");
     }
 
     /// <summary>
-    /// POST /payment-payout/initiate. Auto generates Reference when omitted.
-    /// PROCESSING means accepted, not settled. Verify with the reference afterwards.
+    /// POST /payment-payout/initiate. PROCESSING means accepted, not settled.
+    /// Confirm via webhook or status check with PayoutReference before treating as delivered.
     /// </summary>
-    public async Task<PayoutResult> InitiateAsync(PayoutInput input, CancellationToken cancellationToken = default)
+    public async Task<PayoutResponseModel> InitiateAsync(PayoutRequestModel input,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
-        var body = string.IsNullOrEmpty(input.Reference)
-            ? input with { Reference = WayaPayClient.GenerateReference("PAYOUT") }
-            : input;
 
-        return await _client.RequestAsync<PayoutResult>(
-                HttpMethod.Post, "/payment-payout/initiate", body, cancellationToken: cancellationToken)
-            .ConfigureAwait(false) ?? throw WayaPayClient.EmptyData("/payment-payout/initiate");
+        return await _client.RequestAsync<PayoutResponseModel>(
+                HttpMethod.Post, "/payment-payout/initiate", input, cancellationToken: cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException("Empty response data from /payment-payout/initiate");
     }
 }
