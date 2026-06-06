@@ -2,29 +2,20 @@ using WayaPay;
 
 namespace Wayapay.Tests.Helpers;
 
-/// <summary>
-/// Builds a real WayaPayClient using credentials from environment variables.
-/// Only used by [Trait("Category","Live")] integration tests.
-/// Set these before running live tests:
-///   export WAYAPAY_MERCHANT_ID=MER_BdVFq17797046929104WEpS
-///   export WAYAPAY_SECRET_KEY=WAYASECK_PROD_0xdff7910a5b97472a950fd4a2a427470a
-/// </summary>
 internal static class LiveFactory
 {
     internal static WayaPayClient Client()
     {
         var merchantId = Environment.GetEnvironmentVariable("WAYAPAY_MERCHANT_ID")
             ?? throw new InvalidOperationException(
-                "Set WAYAPAY_MERCHANT_ID env var before running live tests.");
+                "Missing WAYAPAY_MERCHANT_ID. Run: export WAYAPAY_MERCHANT_ID=<your-id>");
 
         var secretKey = Environment.GetEnvironmentVariable("WAYAPAY_SECRET_KEY")
             ?? throw new InvalidOperationException(
-                "Set WAYAPAY_SECRET_KEY env var before running live tests.");
+                "Missing WAYAPAY_SECRET_KEY. Run: export WAYAPAY_SECRET_KEY=<your-key>");
 
-        // Key prefix determines environment: WAYASECK_PROD_ → production, WAYASECK_TEST_ → staging
-        var env = secretKey.StartsWith("WAYASECK_PROD_", StringComparison.Ordinal)
-            ? "production"
-            : "staging";
+        // Default to staging. Set WAYAPAY_ENV=production for a live production account.
+        var env = Environment.GetEnvironmentVariable("WAYAPAY_ENV") ?? "staging";
 
         return new WayaPayClient(new WayaPayOptions
         {
