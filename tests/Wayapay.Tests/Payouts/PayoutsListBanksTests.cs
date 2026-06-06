@@ -1,10 +1,11 @@
 using System.Net;
 using Wayapay.Tests.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Wayapay.Tests.Payouts;
 
-public sealed class PayoutsListBanksTests
+public sealed class PayoutsListBanksTests(ITestOutputHelper output)
 {
     [Fact]
     public async Task ReturnsEmptyList_WhenDataIsNull()
@@ -15,6 +16,7 @@ public sealed class PayoutsListBanksTests
         var banks = await client.Payouts.ListBanksAsync();
 
         Assert.Empty(banks);
+        output.WriteLine("DONE: ReturnsEmptyList_WhenDataIsNull");
     }
 
     [Fact]
@@ -30,6 +32,7 @@ public sealed class PayoutsListBanksTests
         Assert.Equal("Guaranty Trust Bank", banks[0].Name);
         Assert.True(banks[0].Status);
         Assert.Equal("011", banks[1].Code);
+        output.WriteLine("DONE: DeserializesBankList");
     }
 
     [Fact]
@@ -43,5 +46,6 @@ public sealed class PayoutsListBanksTests
 
         Assert.Equal(HttpMethod.Get, handler.LastRequest!.Method);
         Assert.EndsWith("/get-bank-list", handler.LastRequest.RequestUri!.AbsolutePath);
+        output.WriteLine("DONE: SendsGetRequest_ToCorrectPath");
     }
 }

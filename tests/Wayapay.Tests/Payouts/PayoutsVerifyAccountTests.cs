@@ -1,10 +1,11 @@
 using System.Net;
 using Wayapay.Tests.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Wayapay.Tests.Payouts;
 
-public sealed class PayoutsVerifyAccountTests
+public sealed class PayoutsVerifyAccountTests(ITestOutputHelper output)
 {
     [Fact]
     public async Task ThrowsArgumentException_WhenBankCodeMissingForOthers()
@@ -15,6 +16,7 @@ public sealed class PayoutsVerifyAccountTests
             client.Payouts.VerifyAccountAsync(Factory.VerifyRequest(enquiryType: "OTHERS", bankCode: null)));
 
         Assert.Contains("BankCode", ex.Message);
+        output.WriteLine("DONE: ThrowsArgumentException_WhenBankCodeMissingForOthers");
     }
 
     [Fact]
@@ -27,6 +29,7 @@ public sealed class PayoutsVerifyAccountTests
             Factory.VerifyRequest(enquiryType: "WAYA-BANK", bankCode: null));
 
         Assert.Equal("JOHN DOE", result.AccountName);
+        output.WriteLine("DONE: DoesNotThrow_WhenWayaBankWithNoBankCode");
     }
 
     [Fact]
@@ -52,6 +55,7 @@ public sealed class PayoutsVerifyAccountTests
         Assert.Equal("JOHN DOE", result.AccountName);
         Assert.Equal("Access Bank", result.BankName);
         Assert.Equal("00", result.ResponseCode);
+        output.WriteLine("DONE: ReturnsVerifiedAccount_OnSuccess");
     }
 
     [Fact]
@@ -65,5 +69,6 @@ public sealed class PayoutsVerifyAccountTests
 
         Assert.Equal(HttpMethod.Post, handler.LastRequest!.Method);
         Assert.EndsWith("/verify-account", handler.LastRequest.RequestUri!.AbsolutePath);
+        output.WriteLine("DONE: SendsPostRequest_ToCorrectPath");
     }
 }

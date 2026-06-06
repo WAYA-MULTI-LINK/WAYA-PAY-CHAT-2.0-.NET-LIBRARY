@@ -19,9 +19,8 @@ internal static class LiveFactory
 
         return new WayaPayClient(new WayaPayOptions
         {
-            MerchantId  = merchantId,
-            SecretKey   = secretKey,
-        
+            MerchantId = merchantId,
+            SecretKey = secretKey,
         });
     }
 }

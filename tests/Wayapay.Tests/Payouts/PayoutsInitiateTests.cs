@@ -2,10 +2,11 @@ using System.Net;
 using System.Text.Json;
 using Wayapay.Tests.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Wayapay.Tests.Payouts;
 
-public sealed class PayoutsInitiateTests
+public sealed class PayoutsInitiateTests(ITestOutputHelper output)
 {
     [Fact]
     public async Task ReturnsPayoutResult_OnSuccess()
@@ -25,6 +26,7 @@ public sealed class PayoutsInitiateTests
         Assert.Equal("MPO-20260604-abc123", result.PayoutReference);
         Assert.Equal("PROCESSING", result.Status);
         Assert.Equal("REF-001", result.MerchantReference);
+        output.WriteLine("DONE: ReturnsPayoutResult_OnSuccess");
     }
 
     [Fact]
@@ -41,6 +43,7 @@ public sealed class PayoutsInitiateTests
         Assert.Equal("MY-REF-42", doc.RootElement.GetProperty("reference").GetString());
         Assert.Equal("NGN", doc.RootElement.GetProperty("currency").GetString());
         Assert.Equal("0123456789", doc.RootElement.GetProperty("accountNumber").GetString());
+        output.WriteLine("DONE: SendsCorrectBody");
     }
 
     [Fact]
@@ -54,6 +57,7 @@ public sealed class PayoutsInitiateTests
 
         Assert.Equal(HttpMethod.Post, handler.LastRequest!.Method);
         Assert.EndsWith("/payment-payout/initiate", handler.LastRequest.RequestUri!.AbsolutePath);
+        output.WriteLine("DONE: SendsPostRequest_ToCorrectPath");
     }
 
     [Fact]
@@ -63,5 +67,6 @@ public sealed class PayoutsInitiateTests
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             client.Payouts.InitiateAsync(null!));
+        output.WriteLine("DONE: ThrowsArgumentNullException_WhenInputIsNull");
     }
 }

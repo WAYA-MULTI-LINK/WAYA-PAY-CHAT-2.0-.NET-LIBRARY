@@ -3,7 +3,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using WayaPay.Models;
 using WayaPay.Services;
 
 namespace WayaPay;
@@ -15,7 +14,7 @@ namespace WayaPay;
 /// </summary>
 public sealed class WayaPayClient : IDisposable
 {
-    private const string ProductionBaseUrl = "https://services.wayapay.ng/merchant-middleware/api/v2";
+    private const string BaseUrl = "https://services.wayapay.ng/merchant-middleware/api/v2";
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
@@ -28,7 +27,6 @@ public sealed class WayaPayClient : IDisposable
     private readonly HttpClient _http;
     private readonly bool _ownsHttp;
 
-    public string BaseUrl { get; }
     public int MaxRetries { get; }
 
     public Identity Identity { get; }
@@ -47,8 +45,6 @@ public sealed class WayaPayClient : IDisposable
         _secretKey = options.SecretKey;
         _timeout = TimeSpan.FromMilliseconds(options.TimeoutMs);
         MaxRetries = options.MaxRetries;
-
-        BaseUrl = (options.BaseUrl ?? ProductionBaseUrl).TrimEnd('/');
 
         _http = options.HttpClient ?? new HttpClient();
         _ownsHttp = options.HttpClient is null;
@@ -155,7 +151,7 @@ public sealed class WayaPayClient : IDisposable
         return $"{prefix}-{ms}-{hex}";
     }
 
-    private string BuildUrl(string path, IReadOnlyDictionary<string, string?>? query)
+    private static string BuildUrl(string path, IReadOnlyDictionary<string, string?>? query)
     {
         var url = BaseUrl + path;
         if (query is null) return url;

@@ -2,10 +2,11 @@ using System.Net;
 using System.Text.Json;
 using Wayapay.Tests.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Wayapay.Tests.Identity;
 
-public sealed class IdentityVerifyBvnTests
+public sealed class IdentityVerifyBvnTests(ITestOutputHelper output)
 {
     [Fact]
     public async Task ThrowsArgumentException_WhenBvnTooShort()
@@ -14,6 +15,7 @@ public sealed class IdentityVerifyBvnTests
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             client.Identity.VerifyBvnAsync(Factory.BvnRequest("1234567890"))); // 10 digits
+        output.WriteLine("DONE: ThrowsArgumentException_WhenBvnTooShort");
     }
 
     [Fact]
@@ -23,6 +25,7 @@ public sealed class IdentityVerifyBvnTests
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             client.Identity.VerifyBvnAsync(Factory.BvnRequest("123456789012"))); // 12 digits
+        output.WriteLine("DONE: ThrowsArgumentException_WhenBvnTooLong");
     }
 
     [Fact]
@@ -32,6 +35,7 @@ public sealed class IdentityVerifyBvnTests
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             client.Identity.VerifyBvnAsync(Factory.BvnRequest("2250080903A")));
+        output.WriteLine("DONE: ThrowsArgumentException_WhenBvnContainsLetters");
     }
 
     [Fact]
@@ -57,6 +61,7 @@ public sealed class IdentityVerifyBvnTests
         Assert.Equal("AUGUSTINE", result.FirstName);
         Assert.Equal("ASOGWA", result.LastName);
         Assert.Equal("False", result.WatchListed);
+        output.WriteLine("DONE: ReturnsResult_OnSuccess");
     }
 
     [Fact]
@@ -71,6 +76,7 @@ public sealed class IdentityVerifyBvnTests
         Assert.NotNull(handler.LastBody);
         using var doc = JsonDocument.Parse(handler.LastBody!);
         Assert.Equal("22500809037", doc.RootElement.GetProperty("bvn").GetString());
+        output.WriteLine("DONE: SendsCorrectBody");
     }
 
     [Fact]
@@ -84,5 +90,6 @@ public sealed class IdentityVerifyBvnTests
 
         Assert.Equal(HttpMethod.Post, handler.LastRequest!.Method);
         Assert.EndsWith("/identity-verification/bvn", handler.LastRequest.RequestUri!.AbsolutePath);
+        output.WriteLine("DONE: SendsPostRequest_ToCorrectPath");
     }
 }

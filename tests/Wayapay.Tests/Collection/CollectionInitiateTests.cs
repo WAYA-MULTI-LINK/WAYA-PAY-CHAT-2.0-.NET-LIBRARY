@@ -2,10 +2,11 @@ using System.Net;
 using System.Text.Json;
 using Wayapay.Tests.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Wayapay.Tests.Collection;
 
-public sealed class CollectionInitiateTests
+public sealed class CollectionInitiateTests(ITestOutputHelper output)
 {
     [Fact]
     public async Task ReturnsCheckoutUrl_OnSuccess()
@@ -28,6 +29,7 @@ public sealed class CollectionInitiateTests
         Assert.Equal("178056425312256824", result.TransactionId);
         Assert.Equal("https://pay.staging.wayaquick.com/?_tranId=178056425312256824", result.CheckOutUrl);
         Assert.Equal("MER_TEST", result.MerchantId);
+        output.WriteLine("DONE: ReturnsCheckoutUrl_OnSuccess");
     }
 
     [Fact]
@@ -45,6 +47,7 @@ public sealed class CollectionInitiateTests
         Assert.Equal("NGN", doc.RootElement.GetProperty("currency").GetString());
         Assert.Equal("test@example.com", doc.RootElement.GetProperty("email").GetString());
         Assert.Equal("5000.00", doc.RootElement.GetProperty("amount").GetString());
+        output.WriteLine("DONE: SendsCorrectBody");
     }
 
     [Fact]
@@ -58,6 +61,7 @@ public sealed class CollectionInitiateTests
 
         Assert.Equal(HttpMethod.Post, handler.LastRequest!.Method);
         Assert.EndsWith("/payment-collect/initiate", handler.LastRequest.RequestUri!.AbsolutePath);
+        output.WriteLine("DONE: SendsPostRequest_ToCorrectPath");
     }
 
     [Fact]
@@ -67,6 +71,7 @@ public sealed class CollectionInitiateTests
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             client.Collection.InitiateAsync(null!));
+        output.WriteLine("DONE: ThrowsArgumentNullException_WhenInputIsNull");
     }
 
     [Fact]
@@ -79,5 +84,6 @@ public sealed class CollectionInitiateTests
             client.Collection.InitiateAsync(Factory.CollectionRequest()));
 
         Assert.Contains("IP 1.2.3.4 is not whitelisted", ex.Message);
+        output.WriteLine("DONE: ThrowsHttpRequestException_OnApiError");
     }
 }

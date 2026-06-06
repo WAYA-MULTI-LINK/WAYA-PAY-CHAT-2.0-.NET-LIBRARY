@@ -9,9 +9,6 @@ public sealed class WayaPayOptions
     /// <summary>Your secret key. WAYASECK_TEST_... on staging, WAYASECK_... on live.</summary>
     public required string SecretKey { get; init; }
 
-    /// <summary>Override the base URL entirely.</summary>
-    public string? BaseUrl { get; init; }
-
     /// <summary>Per request timeout in milliseconds.</summary>
     public int TimeoutMs { get; init; } = 30_000;
 
