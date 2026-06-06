@@ -39,3 +39,5 @@ packages/
 appsettings.Development.json
 secrets.json
 .env
+
+.vscode/settings.json
