@@ -1,43 +1,14 @@
-# WayaQuick (.NET)
+# WayaPay .NET
 
-.NET client for the **WayaQuick Merchant API v2**. Collect customer payments, send payouts, verify bank accounts, and run BVN identity checks in Nigeria. Targets `net8.0`, depends on nothing outside the framework.
+.NET client for the **WayaQuick Merchant API v2**. Collect payments, send payouts, verify bank accounts, and run BVN identity checks in Nigeria.
 
-This is a **server-side** library. Your secret key lives here and only here. Never ship it to a browser, a mobile app, or a public repo.
-
-## Requirements
-
-.NET 8.0 or newer.
+Targets `net8.0`. No dependencies outside the framework. **Server-side only** — your secret key must never leave your server.
 
 ## Install
 
 ```bash
 dotnet add package WayaPay
 ```
-
-Or reference the project directly:
-
-```bash
-dotnet add reference path/to/WayaPay.csproj
-```
-
-## Base URL
-
-```
-https://services.wayapay.ng/merchant-middleware
-```
-
-All paths in this reference are relative to the base URL above.
-
-## Authentication
-
-Every request carries two headers:
-
-| Header | Value |
-|---|---|
-| `Authorization` | `Bearer {your_api_secret_key}` |
-| `X-Merchant-Id` | Your Merchant ID (`MER_...`) |
-
-The `_TEST_` / `_PROD_` prefix on your secret key selects the environment automatically. A missing or invalid key returns code `01`.
 
 ## Quickstart
 
@@ -46,199 +17,139 @@ using WayaPay;
 
 var client = new WayaPayClient(new WayaPayOptions
 {
-    MerchantId = "MER_...",           // from the dashboard
-    SecretKey  = "WAYASECK_TEST_...", // WAYASECK_PROD_... on live
+    MerchantId = "MER_...",            // from the dashboard
+    SecretKey  = "WAYASECK_TEST_...",  // swap for WAYASECK_... on live
 });
-
-var banks = await client.Banks.ListAsync();
 ```
 
-## Response envelope
-
-Every method returns the envelope's `data`, already deserialized into a typed record. Failures throw, so the happy path stays clean:
+## List banks
 
 ```csharp
-var acct = await client.Accounts.VerifyAsync(new VerifyAccountInput
+var banks = await client.Payouts.ListBanksAsync();
+// List<PayoutBankResponseModel> — each has .Code and .Name
+```
+
+## Verify an account
+
+Always verify before sending a payout — confirms the account exists and returns the registered name.
+
+```csharp
+var account = await client.Payouts.VerifyAccountAsync(new()
 {
     AccountNumber = "0123456789",
-    BankCode      = "044",
-    EnquiryType   = "OTHERS",
+    EnquiryType   = "OTHERS",   // "WAYA-BANK" for intra-bank
+    BankCode      = "044",      // required when EnquiryType is "OTHERS"
 });
-Console.WriteLine(acct.AccountName); // typed, with IDE autocomplete
+Console.WriteLine(account.AccountName); // "JOHN DOE"
 ```
 
-The raw envelope looks like this:
-
-```json
-{ "success": true, "code": "00", "message": "...", "data": { }, "timestamp": "..." }
-```
-
-`code "00"` (and `success: true`) means success. On any error `success` is `false`, `data` is `null`, and `message` describes the problem.
-
-## API
-
-### Banks
+## Initiate a payout
 
 ```csharp
-List<Bank> banks = await client.Banks.ListAsync();
-```
-
-Returns all supported banks and their CBN codes. Use these codes for payouts and account verification.
-
-### Accounts
-
-```csharp
-// Resolve an account number to its registered name
-// Always call this before initiating a payout
-var result = await client.Accounts.VerifyAsync(new VerifyAccountInput
+var payout = await client.Payouts.InitiateAsync(new()
 {
-    AccountNumber = "0123456789",
-    BankCode      = "044",       // required when EnquiryType is "OTHERS"
-    EnquiryType   = "OTHERS",    // "WAYA-BANK" for intra-bank, "OTHERS" for inter-bank
-});
-Console.WriteLine(result.AccountName); // "JOHN ADEKUNLE DOE"
-```
-
-### Identity
-
-```csharp
-var bvn = await client.Identity.VerifyBvnAsync("22212345678"); // exactly 11 digits
-// treat anything other than "False" on bvn.WatchListed with care
-// full record includes demographics, enrollment bank, watch-list flag, and a base64 portrait
-```
-
-BVN data is sensitive personal information. Store, transmit, and log it only as your data-protection obligations allow.
-
-### Payouts
-
-```csharp
-var payout = await client.Payouts.InitiateAsync(new PayoutInput
-{
-    Amount        = 25000m,
+    Amount        = 5000.00m,
     Currency      = "NGN",
     AccountNumber = "0123456789",
     BankCode      = "044",
-    AccountName   = "JOHN ADEKUNLE DOE",  // match the verified name
-    Reference     = "PAYOUT-20260604-001", // your unique idempotency key — required
-    Narration     = "Payout for order 1234",
+    AccountName   = account.AccountName,
+    Reference     = WayaPayClient.GenerateReference("PAYOUT"),
+    Narration     = "April salary",
 });
-// PROCESSING means accepted, not settled.
-// Confirm via webhook or status check with payout.PayoutReference before treating as delivered.
+// payout.Status == "PROCESSING" means accepted, not yet settled
 ```
 
-`Reference` is required. Generate a fresh one per operation so retries map to the original record and never spawn duplicates. The library also provides a helper:
+`GenerateReference` produces a timestamped, collision-resistant key (`PAYOUT-1748160000000-A1B2C3D4`). Generate a fresh one per operation and reuse the same one on retries.
+
+## Collect a payment
 
 ```csharp
-var reference = WayaPayClient.GenerateReference("PAYOUT"); // PAYOUT-1748160000000-A1B2C3D4
-```
-
-### Collect
-
-Starts a payment collection and returns a checkout URL. Redirect the customer to `CheckOutUrl` to complete payment.
-
-```csharp
-var collect = await client.Collect.InitiateAsync(new CollectInput
+var collection = await client.Collection.InitiateAsync(new()
 {
-    Amount        = "1500.00",            // quoted string
+    Amount        = "1500.00",
     Currency      = "NGN",
-    Email         = "john@example.com",
-    TransactionId = "TXN-V2-20260604-01", // your unique reference
+    Email         = "customer@example.com",
+    TransactionId = WayaPayClient.GenerateReference("TXN"),
     FirstName     = "John",
     LastName      = "Doe",
     Phone         = "08012345678",
     Description   = "Order #1234",
-    Meta          = new { orderId = "1234" },
 });
-
-// Redirect the customer
-Response.Redirect(collect.CheckOutUrl);
-
-// When the customer returns, confirm the result on your server
-// before fulfilling the order — do not trust the redirect alone.
+// Redirect the customer to collection.CheckOutUrl to complete payment.
+// Confirm the result on your server before fulfilling the order.
 ```
 
-`merchantId` is taken from `X-Merchant-Id` automatically — do not send it in the body.
+## BVN identity check
 
-## Required fields are compile time
+```csharp
+var identity = await client.Identity.VerifyBvnAsync(new()
+{
+    Bvn = "22500809037", // exactly 11 digits — validated locally before the request
+});
+Console.WriteLine($"{identity.FirstName} {identity.LastName}");
+```
 
-Input records use C# `required` members, so leaving out a mandatory field is a build error, not a runtime surprise. Conditional and format rules that the type system cannot express (e.g. `BankCode` required when `EnquiryType` is `OTHERS`, exactly 11-digit BVN) are validated locally and throw **before** any network call, so a bad input never burns a request.
+BVN data is sensitive personal information. Store, transmit, and log it only as your data-protection obligations allow.
 
-## Error codes
+## Error handling
 
-| Code | Meaning | HTTP Status |
-|---|---|---|
-| `00` | Success | 200 / 201 |
-| `01` | Unauthorized — missing or invalid API key | 401 |
-| `13` | Validation error — bad or missing fields | 400, 422 |
-| `25` | Not found — account or record not resolved | 404 |
-| `57` | Forbidden | 403 |
-| `91` | Upstream / provider unavailable | 502, 503, 504 |
-| `92` | System busy — try again shortly | 429 |
-| `94` | Duplicate — reference already used | 409 |
-| `96` | Unexpected system error | 500 |
-
-Everything that fails throws a `WayaPayException`. Branch on `Type` for category and `ErrorCode` for the WayaQuick code:
+Failed requests throw `HttpRequestException` with the API message as the exception message.
 
 ```csharp
 try
 {
     await client.Payouts.InitiateAsync(input);
 }
-catch (WayaPayException e)
+catch (HttpRequestException e)
 {
-    e.Type;       // WayaPayErrorType.Api | Validation | Network | Timeout | Config
-    e.ErrorCode;  // WayaQuick code, e.g. "13". null when not an API error.
-    e.Status;     // HTTP status when known
-    e.Message;    // human readable
-    e.Raw;        // raw body or underlying error, for your logs
+    Console.Error.WriteLine(e.Message); // e.g. "IP 1.2.3.4 is not whitelisted"
 }
 ```
 
-## Timeouts and retries
+Input validation errors (missing required fields, malformed BVN, missing `BankCode`) throw `ArgumentException` or `ArgumentNullException` before any network call is made.
+
+## Options
 
 ```csharp
 new WayaPayOptions
 {
-    MerchantId  = "...",
-    SecretKey   = "...",
-    TimeoutMs   = 30_000,
-    MaxRetries  = 2,
-};
+    MerchantId = "MER_...",
+    SecretKey  = "WAYASECK_...",
+    TimeoutMs  = 30_000,   // default: 30 s
+    MaxRetries = 2,        // default: 2 — GET only, exponential backoff
+    HttpClient = ...,      // optional: inject your own (DI, handler chains, test fakes)
+}
 ```
 
-Retries apply to **GET only** (bank list) and only on timeouts, network errors, `92` (429), or `91` (5xx), with exponential backoff. Writes (payout, collect, BVN) never auto-retry — retrying a write you are unsure about is how you pay someone twice. Retry those yourself, with the same reference, once you have checked the status. Every method also accepts a `CancellationToken`.
+Retries apply to **GET requests only** (bank list) on timeouts, network errors, 429, and 5xx. Writes never auto-retry.
 
-## Dependency injection and testing
-
-Inject your own `HttpClient` to plug into `IHttpClientFactory`, add handler chains, or swap in a fake for tests. When you supply one it is used as-is and never disposed.
+## Dependency injection
 
 ```csharp
 services.AddSingleton(sp => new WayaPayClient(new WayaPayOptions
 {
     MerchantId = config["WayaPay:MerchantId"]!,
     SecretKey  = config["WayaPay:SecretKey"]!,
-    HttpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("wayaquick"),
+    HttpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("wayapay"),
 }));
 ```
 
-In unit tests, back that `HttpClient` with a stub `HttpMessageHandler` and assert on the requests without touching the network.
+## Full example
 
-## Before you go live
+See [samples/ConsoleDemo/Program.cs](samples/ConsoleDemo/Program.cs) for a runnable end-to-end demo covering all five operations.
 
-On the merchant dashboard: finish KYC, grab your Merchant ID, generate your secret key under Settings → API Keys and Webhooks, and whitelist your server IPs. Swap your `WAYASECK_TEST_...` key for `WAYASECK_PROD_...` — the rest of your code stays the same.
+```bash
+WAYA_MERCHANT_ID=MER_... WAYA_SECRET_KEY=WAYASECK_TEST_... dotnet run --project samples/ConsoleDemo
+```
 
+## Going live
 
-# Run all tests
-dotnet test tests/Wayapay.Tests/Wayapay.Tests.csproj
+On the merchant dashboard: finish KYC, grab your Merchant ID, generate your secret key under **Settings → API Keys and Webhooks**, and whitelist your server IPs. Swap `WAYASECK_TEST_...` for `WAYASECK_...` — the rest of your code stays the same.
 
-# Run with output (see each test name)
-dotnet test tests/Wayapay.Tests/Wayapay.Tests.csproj --logger "console;verbosity=normal"
+## Contributing
 
-# Run a specific folder/class
-dotnet test --filter "FullyQualifiedName~Wayapay.Tests.Payouts"
-dotnet test --filter "FullyQualifiedName~Wayapay.Tests.Identity"
-dotnet test --filter "FullyQualifiedName~Wayapay.Tests.Collection"
-dotnet test --filter "FullyQualifiedName~Wayapay.Tests.Client"
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-# Run a single test by name
-dotnet test --filter "DisplayName~ReturnsCheckoutUrl_OnSuccess"
+## License
+
+MIT
