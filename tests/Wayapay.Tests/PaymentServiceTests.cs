@@ -63,7 +63,7 @@ public class PaymentServiceTests
         using var client = CreateClient(new StubHandler(HttpStatusCode.OK, """{"success":true}"""));
 
         var ex = await Assert.ThrowsAsync<WayaPayException>(() =>
-            client.Collect.CreateAsync(new CollectInput
+            client.Collection.CreateAsync(new CollectInput
             {
                 PaymentLinkName = "Test Link",
                 Description = "Test",
