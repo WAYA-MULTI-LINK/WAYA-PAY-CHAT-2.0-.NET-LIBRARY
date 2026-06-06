@@ -38,7 +38,7 @@ public sealed class WayaPayClient : IDisposable
     public Accounts Accounts { get; }
     public Identity Identity { get; }
     public Payouts Payouts { get; }
-    public Collect Collect { get; }
+    public Collection Collection { get; }
     public Transactions Transactions { get; }
 
     public WayaPayClient(WayaPayOptions options)
@@ -65,7 +65,7 @@ public sealed class WayaPayClient : IDisposable
         Accounts = new Accounts(this);
         Identity = new Identity(this);
         Payouts = new Payouts(this);
-        Collect = new Collect(this);
+        Collection = new Collection(this);
         Transactions = new Transactions(this);
     }
 

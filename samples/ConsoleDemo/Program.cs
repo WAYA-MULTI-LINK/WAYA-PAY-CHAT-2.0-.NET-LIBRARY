@@ -51,7 +51,7 @@ try
     Console.WriteLine($"Payout: {payout.PayoutReference} {payout.Status}");
 
     // 6. Create a payment link
-    var link = await client.Collect.CreateAsync(new CollectInput
+    var link = await client.Collection.CreateAsync(new CollectInput
     {
         PaymentLinkName = "Order #1234",
         Description = "Order #1234 - 2 items",

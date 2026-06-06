@@ -1,15 +1,17 @@
+using WayaPay.Models.collection;
+
 namespace WayaPay.Services;
 
-public sealed class Collect
+public sealed class Collection
 {
     private readonly WayaPayClient _client;
 
-    internal Collect(WayaPayClient client) => _client = client;
+    internal Collection(WayaPayClient client) => _client = client;
 
     /// <summary>
     /// POST /payment-collect/initiate. If LinkCanExpire is true, ExpiryDate is required.
     /// </summary>
-    public async Task<CollectResult> CreateAsync(CollectInput input, CancellationToken cancellationToken = default)
+    public async Task<CollectionResponseModel> CreateAsync(CollectionRequestModel input, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(input);
         if (input.LinkCanExpire == true && string.IsNullOrEmpty(input.ExpiryDate))
