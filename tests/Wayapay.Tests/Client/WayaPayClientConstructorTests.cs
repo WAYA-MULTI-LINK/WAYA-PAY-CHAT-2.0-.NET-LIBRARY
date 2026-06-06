@@ -46,7 +46,6 @@ public sealed class WayaPayClientConstructorTests
         {
             MerchantId  = "MER_TEST",
             SecretKey   = "WAYASECK_TEST_key",
-            Environment = "staging",
         });
         Assert.Contains("staging", client.BaseUrl);
     }

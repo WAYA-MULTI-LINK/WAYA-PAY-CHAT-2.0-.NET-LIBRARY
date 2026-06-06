@@ -21,7 +21,7 @@ internal static class LiveFactory
         {
             MerchantId  = merchantId,
             SecretKey   = secretKey,
-            Environment = env,
+        
         });
     }
 }
