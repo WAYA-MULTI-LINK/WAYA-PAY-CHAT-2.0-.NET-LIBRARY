@@ -2,14 +2,15 @@ using System.Text.Json.Nodes;
 
 namespace WayaPay.Models.collection;
 
+/// <summary>Request body for POST /api/v2/payment-collect/initiate. Starts a payment collection and returns a checkout URL.</summary>
 public sealed record CollectionRequestModel
 {
     /// <summary>Quoted string, e.g. "1500.00".</summary>
     public required string Amount { get; init; }
-    
+
     /// <summary>Quoted string, e.g. "NGN".</summary>
     public required string Currency { get; init; }
-    
+
     /// <summary>Quoted string, e.g. "example@email.com".</summary>
     public required string Email { get; init; }
 
@@ -18,13 +19,13 @@ public sealed record CollectionRequestModel
 
     /// <summary>Quoted string, e.g. "firstname".</summary>
     public required string FirstName { get; init; }
-    
+
     /// <summary>Quoted string, e.g. "lastname".</summary>
     public required string LastName { get; init; }
-    
+
     /// <summary>Quoted string, e.g. "phone".</summary>
     public required string Phone { get; init; }
-    
+
     /// <summary>Quoted string, e.g. "description".</summary>
     public required string Description { get; init; }
 

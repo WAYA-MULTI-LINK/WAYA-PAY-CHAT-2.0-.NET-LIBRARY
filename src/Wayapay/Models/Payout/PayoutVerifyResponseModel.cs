@@ -1,5 +1,6 @@
 namespace WayaPay.Models.Payout;
 
+/// <summary>Response from POST /api/v2/verify-account. Contains the resolved account name and bank details.</summary>
 public sealed record PayoutVerifyResponseModel
 {
     /// <summary>True when the account was resolved successfully.</summary>
