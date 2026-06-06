@@ -1,10 +1,11 @@
 using Wayapay.Tests.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Wayapay.Tests.Live;
 
 [Trait("Category", "Live")]
-public sealed class LiveCollectionTests
+public sealed class LiveCollectionTests(ITestOutputHelper output)
 {
     [Fact]
     public async Task InitiateCollection_ReturnsCheckoutUrl()
@@ -26,5 +27,6 @@ public sealed class LiveCollectionTests
         Assert.NotNull(result);
         Assert.False(string.IsNullOrWhiteSpace(result.CheckOutUrl));
         Assert.False(string.IsNullOrWhiteSpace(result.TransactionId));
+        output.WriteLine("DONE: InitiateCollection_ReturnsCheckoutUrl");
     }
 }

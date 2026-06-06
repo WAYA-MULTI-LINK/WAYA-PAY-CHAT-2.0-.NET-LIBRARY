@@ -1,10 +1,11 @@
 using System.Net;
 using Wayapay.Tests.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Wayapay.Tests.Client;
 
-public sealed class ClientHttpBehaviorTests
+public sealed class ClientHttpBehaviorTests(ITestOutputHelper output)
 {
     [Fact]
     public async Task ThrowsHttpRequestException_OnErrorEnvelope()
@@ -16,6 +17,7 @@ public sealed class ClientHttpBehaviorTests
             client.Payouts.ListBanksAsync());
 
         Assert.Contains("IP not whitelisted", ex.Message);
+        output.WriteLine("DONE: ThrowsHttpRequestException_OnErrorEnvelope");
     }
 
     [Fact]
@@ -26,6 +28,7 @@ public sealed class ClientHttpBehaviorTests
 
         await Assert.ThrowsAsync<HttpRequestException>(() =>
             client.Payouts.ListBanksAsync());
+        output.WriteLine("DONE: ThrowsHttpRequestException_OnUnauthorized");
     }
 
     [Fact]
@@ -36,6 +39,7 @@ public sealed class ClientHttpBehaviorTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             client.Payouts.ListBanksAsync());
+        output.WriteLine("DONE: ThrowsInvalidOperationException_OnNonJsonResponse");
     }
 
     [Fact]
@@ -49,6 +53,7 @@ public sealed class ClientHttpBehaviorTests
 
         Assert.True(handler.LastRequest!.Headers.TryGetValues("X-Merchant-Id", out var values));
         Assert.Equal("MER_TEST", values!.First());
+        output.WriteLine("DONE: SendsXMerchantIdHeader");
     }
 
     [Fact]
@@ -62,5 +67,6 @@ public sealed class ClientHttpBehaviorTests
 
         Assert.Equal("Bearer", handler.LastRequest!.Headers.Authorization!.Scheme);
         Assert.Equal("WAYASECK_TEST_key", handler.LastRequest.Headers.Authorization.Parameter);
+        output.WriteLine("DONE: SendsBearerAuthorizationHeader");
     }
 }

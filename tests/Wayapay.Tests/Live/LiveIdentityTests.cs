@@ -1,10 +1,11 @@
 using Wayapay.Tests.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Wayapay.Tests.Live;
 
 [Trait("Category", "Live")]
-public sealed class LiveIdentityTests
+public sealed class LiveIdentityTests(ITestOutputHelper output)
 {
     [Fact]
     public async Task VerifyBvn_ReturnsIdentityData()
@@ -20,5 +21,6 @@ public sealed class LiveIdentityTests
         Assert.False(string.IsNullOrWhiteSpace(result.FirstName));
         Assert.False(string.IsNullOrWhiteSpace(result.LastName));
         Assert.Equal("22500809037", result.Bvn);
+        output.WriteLine("DONE: VerifyBvn_ReturnsIdentityData");
     }
 }
