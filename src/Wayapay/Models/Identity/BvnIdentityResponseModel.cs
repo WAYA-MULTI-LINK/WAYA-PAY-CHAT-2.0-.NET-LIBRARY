@@ -1,5 +1,6 @@
 namespace WayaPay.Models.Identity;
 
+/// <summary>Response from POST /api/v2/identity-verification/bvn. Contains the BVN holder's KYC record.</summary>
 public sealed record BvnIdentityResponseModel
 {
     /// <summary>11-digit Bank Verification Number.</summary>
