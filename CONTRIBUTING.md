@@ -68,6 +68,9 @@ export WAYA_MERCHANT_ID=MER_...
 export WAYA_SECRET_KEY=WAYASECK_TEST_...
 
 dotnet test tests/Wayapay.Tests/Wayapay.Tests.csproj --filter "Category=Live"
+
+unset WAYA_MERCHANT_ID
+unset WAYA_SECRET_KEY
 ```
 
 Live tests are intentionally not run in CI to avoid flakiness from network conditions or credential availability.
