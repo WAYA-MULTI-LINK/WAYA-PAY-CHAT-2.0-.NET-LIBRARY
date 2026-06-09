@@ -64,8 +64,8 @@ Unit tests run entirely against stub/fake HTTP handlers. No credentials, no netw
 Live tests are tagged `[Trait("Category", "Live")]` and are excluded from the default test run. They call the real WayaQuick API, so you need valid credentials.
 
 ```bash
-export WAYAPAY_MERCHANT_ID=MER_.........
-export WAYAPAY_SECRET_KEY=WAYASECK_PROD_.........
+export WAYAPAY_MERCHANT_ID=MER_xxxxxxxxxxxxxxxx
+export WAYAPAY_SECRET_KEY=WAYASECK_TEST_xxxxxxxxxxxxxxxx
 
 dotnet test tests/Wayapay.Tests/Wayapay.Tests.csproj --filter "Category=Live"
 
