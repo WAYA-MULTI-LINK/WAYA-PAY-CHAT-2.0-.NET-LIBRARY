@@ -6,23 +6,83 @@ Targets `net8.0`. No dependencies outside the framework. **Server-side only** �
 
 ## Install
 
-Install from the local artifact feed (a folder of pre-built `.nupkg` files in [`artifact/`](artifact/README.md)):
+The package isn't on nuget.org yet, so it's distributed as a pre-built `.nupkg` committed to this
+repo under [`artifact/`](artifact/README.md). Pick whichever option fits how you consume the repo.
+
+[//]: # (Once the package is published to nuget.org this is all anyone will need:)
+[//]: # (dotnet add package WayaPay --version 2.0.0)
+
+> **Heads up — `--source` is not a download URL.** A NuGet source must be either a **local folder**
+> or a **NuGet feed endpoint** (a v2/v3 service index). You **cannot** pass a GitHub web link or a raw
+> `.nupkg` URL (e.g. `https://github.com/.../WayaPay.2.0.0.nupkg`) to `--source` — NuGet can't read a
+> single file over HTTP. So from GitHub you either **download the file first** (Option 1/2) or use the
+> **GitHub Packages feed** (Option 3).
+
+### Option 1 — Download the `.nupkg` from GitHub, then install from the folder
+
+1. Go to the repo and open the package file:
+   <https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/blob/main/artifact/WayaPay.2.0.0.nupkg>
+2. Click **Download raw file** (or `curl` the raw URL):
+
+   ```bash
+   mkdir -p ./wayapay-pkg
+   curl -L -o ./wayapay-pkg/WayaPay.2.0.0.nupkg \
+     https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/raw/main/artifact/WayaPay.2.0.0.nupkg
+   ```
+3. Install from the folder you saved it in (the `--source` is that **local folder**, not a URL):
+
+   ```bash
+   dotnet add package WayaPay --version 2.0.0 --source ./wayapay-pkg
+   ```
+
+### Option 2 — Clone the repo (zero config)
+
+The repo ships a `nuget.config` that already registers `artifact/` as a source, so any project built
+from within the clone resolves the package with no `--source` flag:
 
 ```bash
-# Once published to nuget.org, this is all you'll need:
-# dotnet add package WayaPay --version 2.0.0
-
-# Until then, install from the artifact folder shipped with this repo:
-dotnet add package WayaPay --version 2.0.0 --source path/to/artifact
+git clone https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY.git
+cd WAYA-PAY-CHAT-2.0-.NET-LIBRARY
+dotnet add <your-project> package WayaPay --version 2.0.0
 ```
 
-Inside this repo the root `nuget.config` already registers `artifact/` as a source, so you can drop the `--source` flag:
+Consuming from a project **outside** the clone? Point `--source` at the cloned `artifact/` folder:
 
 ```bash
-dotnet add package WayaPay --version 2.0.0
+dotnet add package WayaPay --version 2.0.0 --source /path/to/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/artifact
 ```
 
-To (re)build the package: `dotnet pack src/Wayapay/Wayapay.csproj -c Release --output artifact`. See [`artifact/README.md`](artifact/README.md) for details.
+### Option 3 — GitHub Packages feed (a real NuGet feed URL)
+
+If the package is also published to GitHub Packages, its service index **is** a valid `--source`:
+`https://nuget.pkg.github.com/WAYA-MULTI-LINK/index.json`. GitHub requires authentication for this feed
+**even for public packages**, so add the source with a Personal Access Token that has the `read:packages`
+scope:
+
+```bash
+dotnet nuget add source https://nuget.pkg.github.com/WAYA-MULTI-LINK/index.json \
+  --name github-waya \
+  --username <your-github-username> \
+  --password <YOUR_GITHUB_PAT> \
+  --store-password-in-clear-text
+
+dotnet add package WayaPay --version 2.0.0 --source github-waya
+```
+
+> Maintainers: publish to this feed with
+> `dotnet nuget push artifact/WayaPay.2.0.0.nupkg --source github-waya --api-key <YOUR_GITHUB_PAT>`.
+
+### Rebuilding the package
+
+After changing the library, regenerate the committed `.nupkg` (bump `<Version>` in
+`src/Wayapay/Wayapay.csproj` first if needed) and commit it:
+
+```bash
+dotnet pack src/Wayapay/Wayapay.csproj -c Release --output artifact
+git add artifact/*.nupkg && git commit -m "build: WayaPay 2.0.0 package"
+```
+
+See [`artifact/README.md`](artifact/README.md) for more.
 
 ## Quickstart
 
