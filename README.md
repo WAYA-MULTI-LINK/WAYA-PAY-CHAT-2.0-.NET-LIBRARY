@@ -15,8 +15,8 @@ repo under [`artifact/`](artifact/README.md). Pick whichever option fits how you
 > **Heads up — `--source` is not a download URL.** A NuGet source must be either a **local folder**
 > or a **NuGet feed endpoint** (a v2/v3 service index). You **cannot** pass a GitHub web link or a raw
 > `.nupkg` URL (e.g. `https://github.com/.../WayaPay.2.0.0.nupkg`) to `--source` — NuGet can't read a
-> single file over HTTP. So from GitHub you either **download the file first** (Option 1/2) or use the
-> **GitHub Packages feed** (Option 3).
+> single file over HTTP. So from GitHub you **download the file first** (Option 1) or **clone the repo**
+> (Option 2), then install from a local folder.
 
 ### Option 1 — Download the `.nupkg` from GitHub, then install from the folder
 
