@@ -1,7 +1,11 @@
 # WayaPay artifact feed
 
-Pre-built NuGet packages for the WayaPay .NET client. Use this when you want to consume
-the library without publishing to nuget.org.
+Pre-built NuGet packages for the WayaPay .NET client, committed to the repo so they ship via GitHub.
+Use this to consume the library without publishing to nuget.org.
+
+> A NuGet `--source` must be a **local folder** or a **NuGet feed URL** — never a raw GitHub/`.nupkg`
+> link. To install from GitHub, download the `.nupkg` first (then use the folder you saved it in), or
+> use the GitHub Packages feed. Full walkthrough in the repo's top-level `README.md` → **Install**.
 
 ## Rebuild the package
 
