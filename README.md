@@ -52,36 +52,6 @@ Consuming from a project **outside** the clone? Point `--source` at the cloned `
 dotnet add package WayaPay --version 2.0.0 --source /path/to/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/artifact
 ```
 
-### Option 3 — GitHub Packages feed (a real NuGet feed URL)
-
-If the package is also published to GitHub Packages, its service index **is** a valid `--source`:
-`https://nuget.pkg.github.com/WAYA-MULTI-LINK/index.json`. GitHub requires authentication for this feed
-**even for public packages**, so add the source with a Personal Access Token that has the `read:packages`
-scope:
-
-```bash
-dotnet nuget add source https://nuget.pkg.github.com/WAYA-MULTI-LINK/index.json \
-  --name github-waya \
-  --username <your-github-username> \
-  --password <YOUR_GITHUB_PAT> \
-  --store-password-in-clear-text
-
-dotnet add package WayaPay --version 2.0.0 --source github-waya
-```
-
-> Maintainers: publish to this feed with
-> `dotnet nuget push artifact/WayaPay.2.0.0.nupkg --source github-waya --api-key <YOUR_GITHUB_PAT>`.
-
-### Rebuilding the package
-
-After changing the library, regenerate the committed `.nupkg` (bump `<Version>` in
-`src/Wayapay/Wayapay.csproj` first if needed) and commit it:
-
-```bash
-dotnet pack src/Wayapay/Wayapay.csproj -c Release --output artifact
-git add artifact/*.nupkg && git commit -m "build: WayaPay 2.0.0 package"
-```
-
 See [`artifact/README.md`](artifact/README.md) for more.
 
 ## Quickstart
