@@ -68,20 +68,20 @@ var client = new WayaPayClient(new WayaPayOptions
 
 ## Return types at a glance
 
-Every async call returns `Task<T>` for the `T` shown below (omitted from the table for brevity).
-
 | Call | Returns |
 |------|---------|
-| `client.Payouts.ListBanksAsync()` | `List<PayoutBankResponseModel>` |
-| `client.Payouts.VerifyAccountAsync(…)` | `PayoutVerifyResponseModel` |
-| `client.Payouts.InitiateAsync(…)` | `PayoutResponseModel` |
-| `client.Payouts.GetStatusAsync(reference)` | `PayoutStatusModel` |
-| `client.Collection.InitiateAsync(…)` | `CollectionResponseModel` |
-| `client.Collection.GetStatusAsync(refNo)` | `CollectionStatusModel` |
-| `client.Identity.VerifyBvnAsync(…)` | `BvnIdentityResponseModel` |
-| `client.Webhooks.ConstructEvent(…)` | `WebhookEvent` (synchronous) |
-| `client.Webhooks.VerifySignature(…)` | `bool` (synchronous) |
-| `WayaPayClient.GenerateReference(prefix)` | `string` (synchronous) |
+| `client.Payouts.ListBanksAsync()` | `Task<List<PayoutBankResponseModel>>` |
+| `client.Payouts.VerifyAccountAsync(…)` | `Task<PayoutVerifyResponseModel>` |
+| `client.Payouts.InitiateAsync(…)` | `Task<PayoutResponseModel>` |
+| `client.Payouts.GetStatusAsync(reference)` | `Task<PayoutStatusModel>` |
+| `client.Collection.InitiateAsync(…)` | `Task<CollectionResponseModel>` |
+| `client.Collection.GetStatusAsync(refNo)` | `Task<CollectionStatusModel>` |
+| `client.Identity.VerifyBvnAsync(…)` | `Task<BvnIdentityResponseModel>` |
+| `client.Webhooks.ConstructEvent(…)` | `WebhookEvent` |
+| `client.Webhooks.VerifySignature(…)` | `bool` |
+| `WayaPayClient.GenerateReference(prefix)` | `string` |
+
+Each async method also accepts an optional `CancellationToken` and is named with the `…Async` suffix; `await` it to unwrap the `Task<T>`.
 
 ## List banks
 
