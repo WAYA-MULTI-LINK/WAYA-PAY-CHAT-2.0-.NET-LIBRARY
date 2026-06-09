@@ -6,9 +6,23 @@ Targets `net8.0`. No dependencies outside the framework. **Server-side only** â€
 
 ## Install
 
+Install from the local artifact feed (a folder of pre-built `.nupkg` files in [`artifact/`](artifact/README.md)):
+
 ```bash
-dotnet add package WayaPay
+# Once published to nuget.org, this is all you'll need:
+# dotnet add package WayaPay --version 2.0.0
+
+# Until then, install from the artifact folder shipped with this repo:
+dotnet add package WayaPay --version 2.0.0 --source path/to/artifact
 ```
+
+Inside this repo the root `nuget.config` already registers `artifact/` as a source, so you can drop the `--source` flag:
+
+```bash
+dotnet add package WayaPay --version 2.0.0
+```
+
+To (re)build the package: `dotnet pack src/Wayapay/Wayapay.csproj -c Release --output artifact`. See [`artifact/README.md`](artifact/README.md) for details.
 
 ## Quickstart
 
