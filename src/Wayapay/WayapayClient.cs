@@ -14,7 +14,7 @@ namespace WayaPay;
 /// </summary>
 public sealed class WayaPayClient : IDisposable
 {
-    private const string BaseUrl = "https://services.wayapay.ng/merchant-middleware/api/v2";
+    private const string BaseUrl = "https://services.staging.wayapay.ng/merchant-middleware/api/v2";
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
@@ -32,6 +32,7 @@ public sealed class WayaPayClient : IDisposable
     public Identity Identity { get; }
     public Payouts Payouts { get; }
     public Collection Collection { get; }
+    public Webhooks Webhooks { get; }
 
     public WayaPayClient(WayaPayOptions options)
     {
@@ -52,6 +53,7 @@ public sealed class WayaPayClient : IDisposable
         Identity = new Identity(this);
         Payouts = new Payouts(this);
         Collection = new Collection(this);
+        Webhooks = new Webhooks(options.WebhookSecret);
     }
 
     /// <summary>Low-level request helper used by all services. Returns the envelope's Data field.</summary>
