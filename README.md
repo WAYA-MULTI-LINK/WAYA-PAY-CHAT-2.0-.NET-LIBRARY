@@ -22,12 +22,30 @@ var client = new WayaPayClient(new WayaPayOptions
 });
 ```
 
+## Return types at a glance
+
+Every async call returns `Task<T>` for the `T` shown below (omitted from the table for brevity).
+
+| Call | Returns |
+|------|---------|
+| `client.Payouts.ListBanksAsync()` | `List<PayoutBankResponseModel>` |
+| `client.Payouts.VerifyAccountAsync(…)` | `PayoutVerifyResponseModel` |
+| `client.Payouts.InitiateAsync(…)` | `PayoutResponseModel` |
+| `client.Payouts.GetStatusAsync(reference)` | `PayoutStatusModel` |
+| `client.Collection.InitiateAsync(…)` | `CollectionResponseModel` |
+| `client.Collection.GetStatusAsync(refNo)` | `CollectionStatusModel` |
+| `client.Identity.VerifyBvnAsync(…)` | `BvnIdentityResponseModel` |
+| `client.Webhooks.ConstructEvent(…)` | `WebhookEvent` (synchronous) |
+| `client.Webhooks.VerifySignature(…)` | `bool` (synchronous) |
+| `WayaPayClient.GenerateReference(prefix)` | `string` (synchronous) |
+
 ## List banks
 
 ```csharp
 var banks = await client.Payouts.ListBanksAsync();
-// List<PayoutBankResponseModel> — each has .Code and .Name
 ```
+
+**Returns** `List<PayoutBankResponseModel>` — each entry has `.Code`, `.Name`, `.Id`, and `.Status`.
 
 ## Verify an account
 
@@ -42,6 +60,8 @@ var account = await client.Payouts.VerifyAccountAsync(new()
 });
 Console.WriteLine(account.AccountName); // "JOHN DOE"
 ```
+
+**Returns** `PayoutVerifyResponseModel` — `.Successful`, `.AccountNumber`, `.AccountName`, `.BankCode`, `.BankName`, `.ResponseCode`, `.ResponseMessage`, `.EnquiryType`.
 
 ## Initiate a payout
 
@@ -59,6 +79,8 @@ var payout = await client.Payouts.InitiateAsync(new()
 // payout.Status == "PROCESSING" means accepted, not yet settled
 ```
 
+**Returns** `PayoutResponseModel` — `.PayoutReference`, `.MerchantReference`, `.Status`, `.Message`.
+
 `GenerateReference` produces a timestamped, collision-resistant key (`PAYOUT-1748160000000-A1B2C3D4`). Generate a fresh one per operation and reuse the same one on retries.
 
 ## Check payout status
@@ -75,6 +97,8 @@ switch (payout.ParsedStatus().Outcome())
     case PayoutOutcome.Reconciling: /* PENDING — check again later */ break;
 }
 ```
+
+**Returns** `PayoutStatusModel` — `.TransactionReference`, `.Status`, `.Amount`, `.DestinationAccountNumber`, `.DestinationAccountName`, `.DestinationBankName`, `.Narration`, `.CreatedAt`. Parse `.Status` with `.ParsedStatus()` → `PayoutStatus`.
 
 | `Status`   | Terminal | Meaning |
 |------------|----------|---------|
@@ -100,6 +124,8 @@ var collection = await client.Collection.InitiateAsync(new()
 // Confirm the result on your server before fulfilling the order.
 ```
 
+**Returns** `CollectionResponseModel` — `.UniqueId`, `.TransactionId`, `.CheckOutUrl`, `.Amount`, `.Email`, `.MerchantId`.
+
 ## Check collection (deposit) status
 
 The deposit webhook is the primary signal; this endpoint is the pull/safety-net path for reconciliation. Look it up by `refNo` (the gateway `transactionId` / webhook `OrderId`).
@@ -116,6 +142,8 @@ else if (!deposit.ParsedStatus().IsTerminal())
     // Still in flight — keep polling; don't refund or retry.
 }
 ```
+
+**Returns** `CollectionStatusModel` — `.RefNo`, `.TranId`, `.MerchantId`, `.Amount`, `.AmountPaid`, `.Fee`, `.CurrencyCode`, `.Status`, `.SettlementStatus`, `.Channel`, `.ProcessedBy`, `.CustomerEmail`, `.Description`, `.Environment`, `.TranDate`. Parse `.Status` with `.ParsedStatus()` → `CollectionStatus`.
 
 `Amount` is the expected amount; `AmountPaid` is what was actually received — it can be smaller (`PARTIAL` underpayment) or larger (overpayment). Use `Status` + `AmountPaid` as authoritative.
 
@@ -172,6 +200,8 @@ app.MapPost("/waya/webhook", async (HttpRequest request) =>
 });
 ```
 
+**Returns** `WebhookEvent` (synchronous, not a `Task`) — `.OrderId`, `.Amount`, `.Fee`, `.Currency`, `.Status`, `.Description`, `.TranTime`, `.TransactionDate`, `.ProductName`, `.BusinessName`, `.Customer` (`.Name`, `.Email`, `.PhoneNumber`, `.CustomerId`), `.MerchantId`, `.BranchCategory`, `.RecurrentPayment`. Parse `.Status` with `.ParsedStatus()` → `WebhookStatus`. Throws `WayaPayWebhookException` instead of returning when verification fails.
+
 | `Status` | `WebhookStatus` | What to do |
 |----------|-----------------|------------|
 | `SUCCESSFUL` | `Successful` | Fulfil the order. Check `OrderId` for idempotency. |
@@ -212,6 +242,8 @@ var identity = await client.Identity.VerifyBvnAsync(new()
 });
 Console.WriteLine($"{identity.FirstName} {identity.LastName}");
 ```
+
+**Returns** `BvnIdentityResponseModel` — `.Bvn`, `.FirstName`, `.MiddleName`, `.LastName`, `.DateOfBirth`, `.Gender`, `.PhoneNumber1`, `.Email`, `.Nationality`, `.StateOfOrigin`, `.LgaOfOrigin`, `.LgaOfResidence`, `.ResidentialAddress`, `.MaritalStatus`, `.RegistrationDate`, `.WatchListed`, `.Base64Image`.
 
 BVN data is sensitive personal information. Store, transmit, and log it only as your data-protection obligations allow.
 
