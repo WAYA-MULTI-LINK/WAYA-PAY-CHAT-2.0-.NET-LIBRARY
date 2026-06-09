@@ -9,6 +9,13 @@ public sealed class WayaPayOptions
     /// <summary>Your secret key. WAYASECK_TEST_... on staging, WAYASECK_... on live.</summary>
     public required string SecretKey { get; init; }
 
+    /// <summary>
+    /// Optional. Merchant webhook secret used by <see cref="WayaPayClient.Webhooks"/> to verify
+    /// incoming webhooks (your merchantSecretTestKey on TEST, merchantProductionSecretKey on PRODUCTION).
+    /// When unset, call the <c>Webhooks</c> overloads that take an explicit secret.
+    /// </summary>
+    public string? WebhookSecret { get; init; }
+
     /// <summary>Per request timeout in milliseconds.</summary>
     public int TimeoutMs { get; init; } = 30_000;
 
