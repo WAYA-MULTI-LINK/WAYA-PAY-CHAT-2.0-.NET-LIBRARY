@@ -14,7 +14,7 @@ namespace WayaPay;
 /// </summary>
 public sealed class WayaPayClient : IDisposable
 {
-    private const string BaseUrl = "https://services.staging.wayapay.ng/merchant-middleware/api/v2";
+    private const string BaseUrl = "https://services.wayapay.ng/merchant-middleware/api/v2";
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
