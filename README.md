@@ -7,7 +7,8 @@ Targets `net8.0`. No dependencies outside the framework. **Server-side only** �
 ## Install
 
 The package isn't on nuget.org yet, so it's distributed as a pre-built `.nupkg` committed to this
-repo under [`artifact/`](artifact/README.md). Pick whichever option fits how you consume the repo.
+repo under [`artifact/version2.0.0/`](artifact/README.md), bundled as a **zip** for easy download.
+Pick whichever option fits how you consume the repo.
 
 [//]: # (Once the package is published to nuget.org this is all anyone will need:)
 [//]: # (dotnet add package WayaPay --version 2.0.0)
@@ -15,21 +16,21 @@ repo under [`artifact/`](artifact/README.md). Pick whichever option fits how you
 > **Heads up — `--source` is not a download URL.** A NuGet source must be either a **local folder**
 > or a **NuGet feed endpoint** (a v2/v3 service index). You **cannot** pass a GitHub web link or a raw
 > `.nupkg` URL (e.g. `https://github.com/.../WayaPay.2.0.0.nupkg`) to `--source` — NuGet can't read a
-> single file over HTTP. So from GitHub you **download the file first** (Option 1) or **clone the repo**
+> single file over HTTP. So from GitHub you **download the zip first** (Option 1) or **clone the repo**
 > (Option 2), then install from a local folder.
 
-### Option 1 — Download the `.nupkg` from GitHub, then install from the folder
+### Option 1 — Download the zip from GitHub, then install from the folder
 
-1. Go to the repo and open the package file:
-   <https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/blob/main/artifact/WayaPay.2.0.0.nupkg>
-2. Click **Download raw file** (or `curl` the raw URL):
+1. Go to the repo and open the zip:
+   <https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/blob/main/artifact/version2.0.0/WayaPay.2.0.0.zip>
+2. Click **Download raw file** (or `curl` the raw URL), then unzip it:
 
    ```bash
-   mkdir -p ./wayapay-pkg
-   curl -L -o ./wayapay-pkg/WayaPay.2.0.0.nupkg \
-     https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/raw/main/artifact/WayaPay.2.0.0.nupkg
+   curl -L -O \
+     https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/raw/main/artifact/version2.0.0/WayaPay.2.0.0.zip
+   unzip WayaPay.2.0.0.zip -d ./wayapay-pkg   # -> ./wayapay-pkg/WayaPay.2.0.0.nupkg
    ```
-3. Install from the folder you saved it in (the `--source` is that **local folder**, not a URL):
+3. Install from the folder you unzipped into (the `--source` is that **local folder**, not a URL):
 
    ```bash
    dotnet add package WayaPay --version 2.0.0 --source ./wayapay-pkg
@@ -37,8 +38,9 @@ repo under [`artifact/`](artifact/README.md). Pick whichever option fits how you
 
 ### Option 2 — Clone the repo (zero config)
 
-The repo ships a `nuget.config` that already registers `artifact/` as a source, so any project built
-from within the clone resolves the package with no `--source` flag:
+The repo ships a `nuget.config` that registers `artifact/` as a source (NuGet searches its
+subfolders recursively, so the package inside `version2.0.0/` is found), so any project built from
+within the clone resolves the package with no `--source` flag:
 
 ```bash
 git clone https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY.git

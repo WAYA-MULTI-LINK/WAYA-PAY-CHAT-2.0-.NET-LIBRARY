@@ -22,7 +22,7 @@ project.lock.json
 
 # ...but DO publish the distributable packages in artifact/ so they ship with the repo.
 !artifact/
-!artifact/*.nupkg
+!artifact/**/*.nupkg
 
 # NuGet packages directory
 packages/
