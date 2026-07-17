@@ -119,17 +119,30 @@ The library is published as [`WayaQuick.Integration`](https://www.nuget.org/pack
 
 > **Caution — versions on nuget.org are permanent.** A published version can be *unlisted* (hidden from search) but never deleted or re-pushed: once `2.0.1` exists, no one can ever publish a different `2.0.1`. Make sure `<Version>` was bumped and the build is final **before** tagging — the tag and the commit it points at must include the version bump, or CI will pack the old version.
 
-### CI credentials
+### CI credentials — Trusted Publishing (no API key)
 
-The workflow needs one repository secret (Settings → Secrets and variables → Actions):
+The workflow authenticates with [Trusted Publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing): GitHub Actions presents an OIDC token that nuget.org exchanges for a 1-hour API key at publish time, so there is no long-lived key to store or rotate. Two things must be configured:
 
-| Secret | Value |
-|--------|-------|
-| `NUGET_API_KEY` | nuget.org API key with *Push* scope for `WayaQuick.*` (create at nuget.org → account → API Keys) |
+1. **A Trusted Publishing policy on nuget.org** (username → **Trusted Publishing** → add policy):
 
-API keys expire after at most a year — regenerate and update the secret when pushes start failing with `403`.
+   | Field | Value |
+   |-------|-------|
+   | Repository Owner | `WAYA-MULTI-LINK` |
+   | Repository | `WAYA-PAY-CHAT-2.0-.NET-LIBRARY` |
+   | Workflow File | `publish.yml` (file name only, no path) |
+   | Environment | leave empty |
+
+2. **One repository secret** (Settings → Secrets and variables → Actions):
+
+   | Secret | Value |
+   |--------|-------|
+   | `NUGET_USER` | The nuget.org **profile name** the policy belongs to (not an email address) |
+
+> A newly created policy can start as *temporarily active* for 7 days. If no publish happens in that window it goes inactive — reactivate it from the Trusted Publishing page (one click) and publish again. After the first successful publish it becomes permanently active.
 
 ### Publishing manually (fallback)
+
+Trusted Publishing only covers CI. For a manual push from your machine, create a short-lived API key on nuget.org (account → API Keys, *Push* scope, glob `WayaQuick.*`):
 
 ```bash
 dotnet pack src/Wayaquick/Wayaquick.csproj -c Release -o ./artifacts
