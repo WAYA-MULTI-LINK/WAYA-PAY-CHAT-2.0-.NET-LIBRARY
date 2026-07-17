@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>WayaQuick</RootNamespace>
+    <AssemblyName>WayaQuick</AssemblyName>
+    <PackageId>WayaQuick</PackageId>
+    <Version>2.0.0</Version>
+    <Description>.NET client for the WayaQuick Merchant API v2: collect, payout, accounts, identity.</Description>
+    <PackageTags>wayaquick;wayapay;payments;payout;collect;bvn;nigeria;fintech</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../../assets/icon.png" Pack="true" PackagePath="\" Condition="Exists('../../../assets/icon.png')" />
+    <None Include="../../README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
