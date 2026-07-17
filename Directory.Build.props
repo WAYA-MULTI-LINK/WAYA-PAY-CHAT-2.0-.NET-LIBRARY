@@ -1,11 +1,11 @@
 <Project>
 
   <PropertyGroup>
-    <Authors>WayaPay</Authors>
-    <Company>WayaPay</Company>
-    <Copyright>© 2026 WayaPay</Copyright>
+    <Authors>WayaQuick</Authors>
+    <Company>WayaQuick</Company>
+    <Copyright>© 2026 WayaQuick</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/wayapay/wayapay-dotnet</RepositoryUrl>
+    <RepositoryUrl>https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>

@@ -1,4 +1,4 @@
-# WayaPay .NET
+# WayaQuick .NET
 
 .NET client for the **WayaQuick Merchant API v2**. Collect payments, send payouts, verify bank accounts, and run BVN identity checks in Nigeria.
 
@@ -11,29 +11,29 @@ repo under [`artifact/version2.0.0/`](artifact/README.md), bundled as a **zip** 
 Pick whichever option fits how you consume the repo.
 
 [//]: # (Once the package is published to nuget.org this is all anyone will need:)
-[//]: # (dotnet add package WayaPay --version 2.0.0)
+[//]: # (dotnet add package WayaQuick --version 2.0.0)
 
 > **Heads up — `--source` is not a download URL.** A NuGet source must be either a **local folder**
 > or a **NuGet feed endpoint** (a v2/v3 service index). You **cannot** pass a GitHub web link or a raw
-> `.nupkg` URL (e.g. `https://github.com/.../WayaPay.2.0.0.nupkg`) to `--source` — NuGet can't read a
+> `.nupkg` URL (e.g. `https://github.com/.../WayaQuick.2.0.0.nupkg`) to `--source` — NuGet can't read a
 > single file over HTTP. So from GitHub you **download the zip first** (Option 1) or **clone the repo**
 > (Option 2), then install from a local folder.
 
 ### Option 1 — Download the zip from GitHub, then install from the folder
 
 1. Go to the repo and open the zip:
-   <https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/blob/main/artifact/version2.0.0/WayaPay.2.0.0.zip>
+   <https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/blob/main/artifact/version2.0.0/WayaQuick.2.0.0.zip>
 2. Click **Download raw file** (or `curl` the raw URL), then unzip it:
 
    ```bash
    curl -L -O \
-     https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/raw/main/artifact/version2.0.0/WayaPay.2.0.0.zip
-   unzip WayaPay.2.0.0.zip -d ./wayapay-pkg   # -> ./wayapay-pkg/WayaPay.2.0.0.nupkg
+     https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/raw/main/artifact/version2.0.0/WayaQuick.2.0.0.zip
+   unzip WayaQuick.2.0.0.zip -d ./wayaquick-pkg   # -> ./wayaquick-pkg/WayaQuick.2.0.0.nupkg
    ```
 3. Install from the folder you unzipped into (the `--source` is that **local folder**, not a URL):
 
    ```bash
-   dotnet add package WayaPay --version 2.0.0 --source ./wayapay-pkg
+   dotnet add package WayaQuick --version 2.0.0 --source ./wayaquick-pkg
    ```
 
 ### Option 2 — Clone the repo (zero config)
@@ -45,13 +45,13 @@ within the clone resolves the package with no `--source` flag:
 ```bash
 git clone https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY.git
 cd WAYA-PAY-CHAT-2.0-.NET-LIBRARY
-dotnet add <your-project> package WayaPay --version 2.0.0
+dotnet add <your-project> package WayaQuick --version 2.0.0
 ```
 
 Consuming from a project **outside** the clone? Point `--source` at the cloned `artifact/` folder:
 
 ```bash
-dotnet add package WayaPay --version 2.0.0 --source /path/to/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/artifact
+dotnet add package WayaQuick --version 2.0.0 --source /path/to/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/artifact
 ```
 
 See [`artifact/README.md`](artifact/README.md) for more.
@@ -59,9 +59,9 @@ See [`artifact/README.md`](artifact/README.md) for more.
 ## Quickstart
 
 ```csharp
-using WayaPay;
+using WayaQuick;
 
-var client = new WayaPayClient(new WayaPayOptions
+var client = new WayaQuickClient(new WayaQuickOptions
 {
     MerchantId = "MER_...",            // from the dashboard
     SecretKey  = "WAYASECK_TEST_...",  // swap for WAYASECK_... on live
@@ -81,7 +81,7 @@ var client = new WayaPayClient(new WayaPayOptions
 | `client.Identity.VerifyBvnAsync(…)` | `Task<BvnIdentityResponseModel>` |
 | `client.Webhooks.ConstructEvent(…)` | `WebhookEvent` |
 | `client.Webhooks.VerifySignature(…)` | `bool` |
-| `WayaPayClient.GenerateReference(prefix)` | `string` |
+| `WayaQuickClient.GenerateReference(prefix)` | `string` |
 
 Each async method also accepts an optional `CancellationToken` and is named with the `…Async` suffix; `await` it to unwrap the `Task<T>`.
 
@@ -119,7 +119,7 @@ var payout = await client.Payouts.InitiateAsync(new()
     AccountNumber = "0123456789",
     BankCode      = "044",
     AccountName   = account.AccountName,
-    Reference     = WayaPayClient.GenerateReference("PAYOUT"),
+    Reference     = WayaQuickClient.GenerateReference("PAYOUT"),
     Narration     = "April salary",
 });
 // payout.Status == "PROCESSING" means accepted, not yet settled
@@ -160,7 +160,7 @@ var collection = await client.Collection.InitiateAsync(new()
     Amount        = "1500.00",
     Currency      = "NGN",
     Email         = "customer@example.com",
-    TransactionId = WayaPayClient.GenerateReference("TXN"),
+    TransactionId = WayaQuickClient.GenerateReference("TXN"),
     FirstName     = "John",
     LastName      = "Doe",
     Phone         = "08012345678",
@@ -206,13 +206,13 @@ A reference that doesn't belong to the authenticated merchant returns `404` (sur
 
 ## Process webhooks
 
-WayaPay POSTs your server whenever a transaction becomes `SUCCESSFUL`, `PARTIAL`, or `FAILED`, so you can fulfil orders in real time instead of polling. **Verify every webhook before acting on it** — `ConstructEvent` checks the HMAC-SHA256 signature and the replay window, and throws `WayaPayWebhookException` on anything it can't trust.
+WayaQuick POSTs your server whenever a transaction becomes `SUCCESSFUL`, `PARTIAL`, or `FAILED`, so you can fulfil orders in real time instead of polling. **Verify every webhook before acting on it** — `ConstructEvent` checks the HMAC-SHA256 signature and the replay window, and throws `WayaQuickWebhookException` on anything it can't trust.
 
 The signature is computed over the **exact raw request bytes**. Capture the body before any JSON middleware re-serialises it, or the recomputed HMAC won't match.
 
 ```csharp
-using WayaPay;
-using WayaPay.Models.Webhook;
+using WayaQuick;
+using WayaQuick.Models.Webhook;
 
 app.MapPost("/waya/webhook", async (HttpRequest request) =>
 {
@@ -223,13 +223,13 @@ app.MapPost("/waya/webhook", async (HttpRequest request) =>
     WebhookEvent evt;
     try
     {
-        evt = WayaPayWebhook.ConstructEvent(
+        evt = WayaQuickWebhook.ConstructEvent(
             payload:   rawBody,
-            timestamp: request.Headers[WayaPayWebhook.TimestampHeader],
-            signature: request.Headers[WayaPayWebhook.SignatureHeader],
+            timestamp: request.Headers[WayaQuickWebhook.TimestampHeader],
+            signature: request.Headers[WayaQuickWebhook.SignatureHeader],
             secret:    webhookSecret); // merchantSecretTestKey or merchantProductionSecretKey
     }
-    catch (WayaPayWebhookException)
+    catch (WayaQuickWebhookException)
     {
         return Results.Unauthorized(); // unsigned / forged / stale — reject
     }
@@ -246,7 +246,7 @@ app.MapPost("/waya/webhook", async (HttpRequest request) =>
 });
 ```
 
-**Returns** `WebhookEvent` (synchronous, not a `Task`) — `.OrderId`, `.Amount`, `.Fee`, `.Currency`, `.Status`, `.Description`, `.TranTime`, `.TransactionDate`, `.ProductName`, `.BusinessName`, `.Customer` (`.Name`, `.Email`, `.PhoneNumber`, `.CustomerId`), `.MerchantId`, `.BranchCategory`, `.RecurrentPayment`. Parse `.Status` with `.ParsedStatus()` → `WebhookStatus`. Throws `WayaPayWebhookException` instead of returning when verification fails.
+**Returns** `WebhookEvent` (synchronous, not a `Task`) — `.OrderId`, `.Amount`, `.Fee`, `.Currency`, `.Status`, `.Description`, `.TranTime`, `.TransactionDate`, `.ProductName`, `.BusinessName`, `.Customer` (`.Name`, `.Email`, `.PhoneNumber`, `.CustomerId`), `.MerchantId`, `.BranchCategory`, `.RecurrentPayment`. Parse `.Status` with `.ParsedStatus()` → `WebhookStatus`. Throws `WayaQuickWebhookException` instead of returning when verification fails.
 
 | `Status` | `WebhookStatus` | What to do |
 |----------|-----------------|------------|
@@ -260,14 +260,14 @@ Notes:
 - Replay protection rejects timestamps outside a 5-minute window by default. Override via the `tolerance` parameter (pass `Timeout.InfiniteTimeSpan` to disable — not recommended).
 - Delivery is fire-and-forget: respond `200` quickly, do heavy work off-thread, and reconcile periodically with the status endpoint.
 
-For a signature-only check (no replay window), use `WayaPayWebhook.VerifySignature(...)`, which returns a `bool`.
+For a signature-only check (no replay window), use `WayaQuickWebhook.VerifySignature(...)`, which returns a `bool`.
 
 ### Via the client
 
-If you set `WebhookSecret` on `WayaPayOptions`, the same calls are available on the client without passing the secret each time:
+If you set `WebhookSecret` on `WayaQuickOptions`, the same calls are available on the client without passing the secret each time:
 
 ```csharp
-var client = new WayaPayClient(new WayaPayOptions
+var client = new WayaQuickClient(new WayaQuickOptions
 {
     MerchantId    = "MER_...",
     SecretKey     = "WAYASECK_TEST_...",
@@ -313,7 +313,7 @@ Input validation errors (missing required fields, malformed BVN, missing `BankCo
 ## Options
 
 ```csharp
-new WayaPayOptions
+new WayaQuickOptions
 {
     MerchantId    = "MER_...",
     SecretKey     = "WAYASECK_...",
@@ -329,11 +329,11 @@ Retries apply to **GET requests only** (bank list) on timeouts, network errors, 
 ## Dependency injection
 
 ```csharp
-services.AddSingleton(sp => new WayaPayClient(new WayaPayOptions
+services.AddSingleton(sp => new WayaQuickClient(new WayaQuickOptions
 {
-    MerchantId = config["WayaPay:MerchantId"]!,
-    SecretKey  = config["WayaPay:SecretKey"]!,
-    HttpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("wayapay"),
+    MerchantId = config["WayaQuick:MerchantId"]!,
+    SecretKey  = config["WayaQuick:SecretKey"]!,
+    HttpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("wayaquick"),
 }));
 ```
 

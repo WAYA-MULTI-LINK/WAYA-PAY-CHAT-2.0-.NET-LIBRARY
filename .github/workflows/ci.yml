@@ -20,14 +20,14 @@ jobs:
           dotnet-version: 8.x
 
       - name: Restore
-        run: dotnet restore Wayapay.sln
+        run: dotnet restore Wayaquick.sln
 
       - name: Build
-        run: dotnet build Wayapay.sln --configuration Release --no-restore
+        run: dotnet build Wayaquick.sln --configuration Release --no-restore
 
       - name: Test
         run: >
-          dotnet test tests/Wayapay.Tests/Wayapay.Tests.csproj
+          dotnet test tests/Wayaquick.Tests/Wayaquick.Tests.csproj
           --configuration Release
           --no-build
           --filter "Category!=Live"

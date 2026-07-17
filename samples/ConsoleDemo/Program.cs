@@ -3,13 +3,13 @@
 
 using System.Security.Cryptography;
 using System.Text;
-using WayaPay;
-using WayaPay.Models.Payout;
-using WayaPay.Models.Identity;
-using WayaPay.Models.collection;
-using WayaPay.Models.Webhook;
+using WayaQuick;
+using WayaQuick.Models.Payout;
+using WayaQuick.Models.Identity;
+using WayaQuick.Models.collection;
+using WayaQuick.Models.Webhook;
 
-var client = new WayaPayClient(new WayaPayOptions
+var client = new WayaQuickClient(new WayaQuickOptions
 {
     MerchantId = Environment.GetEnvironmentVariable("WAYA_MERCHANT_ID")!,
     SecretKey  = Environment.GetEnvironmentVariable("WAYA_SECRET_KEY")!,
@@ -48,7 +48,7 @@ try
         AccountNumber = verified.AccountNumber,
         BankCode      = "044",
         AccountName   = verified.AccountName,
-        Reference     = WayaPayClient.GenerateReference("PAYOUT"),
+        Reference     = WayaQuickClient.GenerateReference("PAYOUT"),
         Narration     = "Demo payout",
     });
     Console.WriteLine($"Payout: {payout.PayoutReference} — {payout.Status}");
@@ -68,7 +68,7 @@ try
         Amount        = "1500.00",
         Currency      = "NGN",
         Email         = "customer@example.com",
-        TransactionId = WayaPayClient.GenerateReference("TXN"),
+        TransactionId = WayaQuickClient.GenerateReference("TXN"),
         FirstName     = "John",
         LastName      = "Doe",
         Phone         = "08012345678",
@@ -83,7 +83,7 @@ try
     if (collectionStatus.ParsedStatus() == CollectionStatus.Successful)
         Console.WriteLine($"Funds confirmed — fulfil order using refNo {collectionStatus.RefNo}");
 
-    // 9. Verify a webhook (offline demo). In production WayaPay POSTs this to your HTTPS endpoint;
+    // 9. Verify a webhook (offline demo). In production WayaQuick POSTs this to your HTTPS endpoint;
     //    here we sign a sample body locally to show the verification flow end to end.
     const string webhookSecret = "WAYASECK_TEST_demo_webhook_secret";
     const string rawBody =
@@ -94,14 +94,14 @@ try
 
     try
     {
-        // Via the client wrapper. With WebhookSecret set in WayaPayOptions you can drop the secret arg:
+        // Via the client wrapper. With WebhookSecret set in WayaQuickOptions you can drop the secret arg:
         //   client.Webhooks.ConstructEvent(rawBody, timestamp, signature);
         var evt = client.Webhooks.ConstructEvent(rawBody, timestamp, signature, webhookSecret);
         Console.WriteLine($"Webhook verified: {evt.OrderId} — {evt.Status} ({evt.Amount} {evt.Currency})");
         if (evt.ShouldFulfil())
             Console.WriteLine($"  Fulfil order — idempotency key {evt.OrderId}");
     }
-    catch (WayaPayWebhookException e)
+    catch (WayaQuickWebhookException e)
     {
         Console.Error.WriteLine($"Rejected webhook: {e.Message}");
     }

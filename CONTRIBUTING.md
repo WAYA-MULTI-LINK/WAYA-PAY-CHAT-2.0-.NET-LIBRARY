@@ -9,14 +9,14 @@
 
 ```
 src/
-  Wayapay/                  # The library — this is what gets packed and published
+  Wayaquick/                  # The library — this is what gets packed and published
     Services/               # Collection, Identity, Payouts
     Models/                 # Request and response records per service
-    WayapayClient.cs        # Entry point — holds the HttpClient, retry loop, auth headers
-    WayapayOptions.cs       # Configuration passed to the constructor
+    WayaquickClient.cs        # Entry point — holds the HttpClient, retry loop, auth headers
+    WayaquickOptions.cs       # Configuration passed to the constructor
 
 tests/
-  Wayapay.Tests/
+  Wayaquick.Tests/
     Client/                 # Constructor, header, and retry behaviour tests
     Collection/             # Collection.InitiateAsync tests
     Identity/               # Identity.VerifyBvnAsync tests
@@ -35,23 +35,23 @@ samples/
 ## Build
 
 ```bash
-dotnet build Wayapay.sln
+dotnet build Wayaquick.sln
 ```
 
 ## Run unit tests
 
 ```bash
 # All unit tests
-dotnet test tests/Wayapay.Tests/Wayapay.Tests.csproj
+dotnet test tests/Wayaquick.Tests/Wayaquick.Tests.csproj
 
 # With per-test output (see DONE: lines)
-dotnet test tests/Wayapay.Tests/Wayapay.Tests.csproj --logger "console;verbosity=detailed"
+dotnet test tests/Wayaquick.Tests/Wayaquick.Tests.csproj --logger "console;verbosity=detailed"
 
 # Filter to one service
-dotnet test --filter "FullyQualifiedName~Wayapay.Tests.Payouts"
-dotnet test --filter "FullyQualifiedName~Wayapay.Tests.Identity"
-dotnet test --filter "FullyQualifiedName~Wayapay.Tests.Collection"
-dotnet test --filter "FullyQualifiedName~Wayapay.Tests.Client"
+dotnet test --filter "FullyQualifiedName~Wayaquick.Tests.Payouts"
+dotnet test --filter "FullyQualifiedName~Wayaquick.Tests.Identity"
+dotnet test --filter "FullyQualifiedName~Wayaquick.Tests.Collection"
+dotnet test --filter "FullyQualifiedName~Wayaquick.Tests.Client"
 
 # Filter to one test by name
 dotnet test --filter "DisplayName~ReturnsCheckoutUrl_OnSuccess"
@@ -64,13 +64,13 @@ Unit tests run entirely against stub/fake HTTP handlers. No credentials, no netw
 Live tests are tagged `[Trait("Category", "Live")]` and are excluded from the default test run. They call the real WayaQuick API, so you need valid credentials.
 
 ```bash
-export WAYAPAY_MERCHANT_ID=MER_BdVFq17797046929104WEpS
-export WAYAPAY_SECRET_KEY=WAYASECK_PROD_0xdff7910a5b97472a950fd4a2a427470a
+export WAYAQUICK_MERCHANT_ID=MER_BdVFq17797046929104WEpS
+export WAYAQUICK_SECRET_KEY=WAYASECK_PROD_0xdff7910a5b97472a950fd4a2a427470a
 
-dotnet test tests/Wayapay.Tests/Wayapay.Tests.csproj --filter "Category=Live"
+dotnet test tests/Wayaquick.Tests/Wayaquick.Tests.csproj --filter "Category=Live"
 
-unset WAYAPAY_MERCHANT_ID
-unset WAYAPAY_SECRET_KEY
+unset WAYAQUICK_MERCHANT_ID
+unset WAYAQUICK_SECRET_KEY
 ```
 
 Live tests are intentionally not run in CI to avoid flakiness from network conditions or credential availability.
@@ -78,8 +78,8 @@ Live tests are intentionally not run in CI to avoid flakiness from network condi
 ## Pack the library
 
 ```bash
-dotnet pack src/Wayapay/Wayapay.csproj -c Release
-# Output: src/Wayapay/bin/Release/WayaPay.<version>.nupkg
+dotnet pack src/Wayaquick/Wayaquick.csproj -c Release
+# Output: src/Wayaquick/bin/Release/WayaQuick.<version>.nupkg
 ```
 
 ## Run the sample
@@ -90,8 +90,8 @@ WAYA_MERCHANT_ID=MER_... WAYA_SECRET_KEY=WAYASECK_TEST_... dotnet run --project 
 
 ## Adding a new feature
 
-1. Add request/response record types under `src/Wayapay/Models/<Service>/`.
-2. Add the method to the relevant service in `src/Wayapay/Services/`.
+1. Add request/response record types under `src/Wayaquick/Models/<Service>/`.
+2. Add the method to the relevant service in `src/Wayaquick/Services/`.
 3. Add unit tests covering the happy path, error path, correct HTTP method/path, and request body shape.
 4. Update `samples/ConsoleDemo/Program.cs` if the feature is user-facing.
 5. Update `CHANGELOG.md` under the relevant version.
