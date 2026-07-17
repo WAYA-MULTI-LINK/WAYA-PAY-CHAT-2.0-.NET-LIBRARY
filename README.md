@@ -6,52 +6,56 @@ Targets `net8.0`. No dependencies outside the framework. **Server-side only** �
 
 ## Install
 
-The package isn't on nuget.org yet, so it's distributed as a pre-built `.nupkg` committed to this
-repo under [`artifact/version2.0.0/`](artifact/README.md), bundled as a **zip** for easy download.
-Pick whichever option fits how you consume the repo.
+The package is published to nuget.org as [`WayaQuick.Integration`](https://www.nuget.org/packages/WayaQuick.Integration):
 
-[//]: # (Once the package is published to nuget.org this is all anyone will need:)
-[//]: # (dotnet add package WayaQuick --version 2.0.0)
+```bash
+dotnet add package WayaQuick.Integration --version 2.0.1
+```
+
+### Offline / air-gapped fallback — install from the repo's artifact feed
+
+Every release is also committed to this repo as a pre-built `.nupkg` under
+[`artifact/version2.0.1/`](artifact/README.md), bundled as a **zip** for easy download.
 
 > **Heads up — `--source` is not a download URL.** A NuGet source must be either a **local folder**
 > or a **NuGet feed endpoint** (a v2/v3 service index). You **cannot** pass a GitHub web link or a raw
-> `.nupkg` URL (e.g. `https://github.com/.../WayaQuick.2.0.0.nupkg`) to `--source` — NuGet can't read a
-> single file over HTTP. So from GitHub you **download the zip first** (Option 1) or **clone the repo**
-> (Option 2), then install from a local folder.
+> `.nupkg` URL (e.g. `https://github.com/.../WayaQuick.Integration.2.0.1.nupkg`) to `--source` — NuGet
+> can't read a single file over HTTP. So from GitHub you **download the zip first** (Option 1) or
+> **clone the repo** (Option 2), then install from a local folder.
 
-### Option 1 — Download the zip from GitHub, then install from the folder
+**Option 1 — Download the zip from GitHub, then install from the folder:**
 
 1. Go to the repo and open the zip:
-   <https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/blob/main/artifact/version2.0.0/WayaQuick.2.0.0.zip>
+   <https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/blob/main/artifact/version2.0.1/WayaQuick.Integration.2.0.1.zip>
 2. Click **Download raw file** (or `curl` the raw URL), then unzip it:
 
    ```bash
    curl -L -O \
-     https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/raw/main/artifact/version2.0.0/WayaQuick.2.0.0.zip
-   unzip WayaQuick.2.0.0.zip -d ./wayaquick-pkg   # -> ./wayaquick-pkg/WayaQuick.2.0.0.nupkg
+     https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/raw/main/artifact/version2.0.1/WayaQuick.Integration.2.0.1.zip
+   unzip WayaQuick.Integration.2.0.1.zip -d ./wayaquick-pkg   # -> ./wayaquick-pkg/WayaQuick.Integration.2.0.1.nupkg
    ```
 3. Install from the folder you unzipped into (the `--source` is that **local folder**, not a URL):
 
    ```bash
-   dotnet add package WayaQuick --version 2.0.0 --source ./wayaquick-pkg
+   dotnet add package WayaQuick.Integration --version 2.0.1 --source ./wayaquick-pkg
    ```
 
-### Option 2 — Clone the repo (zero config)
+**Option 2 — Clone the repo (zero config):**
 
 The repo ships a `nuget.config` that registers `artifact/` as a source (NuGet searches its
-subfolders recursively, so the package inside `version2.0.0/` is found), so any project built from
+subfolders recursively, so the package inside `version2.0.1/` is found), so any project built from
 within the clone resolves the package with no `--source` flag:
 
 ```bash
 git clone https://github.com/WAYA-MULTI-LINK/WAYA-PAY-CHAT-2.0-.NET-LIBRARY.git
 cd WAYA-PAY-CHAT-2.0-.NET-LIBRARY
-dotnet add <your-project> package WayaQuick --version 2.0.0
+dotnet add <your-project> package WayaQuick.Integration --version 2.0.1
 ```
 
 Consuming from a project **outside** the clone? Point `--source` at the cloned `artifact/` folder:
 
 ```bash
-dotnet add package WayaQuick --version 2.0.0 --source /path/to/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/artifact
+dotnet add package WayaQuick.Integration --version 2.0.1 --source /path/to/WAYA-PAY-CHAT-2.0-.NET-LIBRARY/artifact
 ```
 
 See [`artifact/README.md`](artifact/README.md) for more.

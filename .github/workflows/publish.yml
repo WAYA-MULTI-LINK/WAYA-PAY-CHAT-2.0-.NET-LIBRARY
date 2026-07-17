@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*.*.*'
 
+permissions:
+  contents: write   # needed to create the GitHub Release and upload assets
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -23,7 +26,12 @@ jobs:
         run: dotnet build Wayaquick.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test tests/Wayaquick.Tests/Wayaquick.Tests.csproj --configuration Release --no-build --verbosity normal
+        run: >
+          dotnet test tests/Wayaquick.Tests/Wayaquick.Tests.csproj
+          --configuration Release
+          --no-build
+          --filter "Category!=Live"
+          --logger "console;verbosity=normal"
 
       - name: Pack
         run: dotnet pack src/Wayaquick/Wayaquick.csproj --configuration Release --no-build -o ./artifacts
@@ -34,3 +42,9 @@ jobs:
           --api-key ${{ secrets.NUGET_API_KEY }}
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*.nupkg
+          generate_release_notes: true

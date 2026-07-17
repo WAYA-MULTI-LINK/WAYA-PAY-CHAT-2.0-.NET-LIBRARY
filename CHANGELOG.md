@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.1] - 2026-07-17
+
+First version published to [NuGet](https://www.nuget.org/packages/WayaQuick.Integration) via the automated release pipeline. No functional changes.
+
+### Changed
+
+- NuGet package ID is now `WayaQuick.Integration` (renamed from `WayaPay`), matching the Java SDK's `wayaquick-integration` artifactId
+- Renamed WayaPay → WayaQuick throughout: root namespace `WayaPay` → `WayaQuick` and classes `WayaPayClient` → `WayaQuickClient`, `WayaPayOptions` → `WayaQuickOptions`, `WayaPayWebhook` → `WayaQuickWebhook`, `WayaPayWebhookException` → `WayaQuickWebhookException`, `WayaPayResponse` → `WayaQuickResponse`, `WayapayErrorResponse` → `WayaQuickErrorResponse`
+- Live-test environment variables renamed: `WAYAPAY_MERCHANT_ID` → `WAYAQUICK_MERCHANT_ID`, `WAYAPAY_SECRET_KEY` → `WAYAQUICK_SECRET_KEY`
+- Publish workflow now pushes to nuget.org and creates a GitHub Release on every `v*.*.*` tag
+
 ## [2.0.0] - 2026-06-06
 
 ### Breaking changes from 1.x
