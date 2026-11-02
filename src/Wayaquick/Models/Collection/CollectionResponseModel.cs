@@ -19,4 +19,7 @@ public sealed record CollectionResponseModel
 
     /// <summary>Merchant's unique identifier.</summary>
     public string? MerchantId { get; init; }
+
+    /// <summary>ISO 8601 expiration timestamp.</summary>
+    public string? ExpiresAt { get; init; }
 }
