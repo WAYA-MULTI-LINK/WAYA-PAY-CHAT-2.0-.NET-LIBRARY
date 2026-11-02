@@ -82,7 +82,8 @@ var client = new WayaQuickClient(new WayaQuickOptions
 | `client.Payouts.GetStatusAsync(reference)` | `Task<PayoutStatusModel>` |
 | `client.Collection.InitiateAsync(…)` | `Task<CollectionResponseModel>` |
 | `client.Collection.GetStatusAsync(refNo)` | `Task<CollectionStatusModel>` |
-| `client.Identity.VerifyBvnAsync(…)` | `Task<BvnIdentityResponseModel>` |
+| `client.Identity.InitiateBvnAsync(…)` | `Task<BvnInitiateResponseModel>` |
+| `client.Identity.CompleteBvnAsync(…)` | `Task<BvnIdentityResponseModel>` |
 | `client.Webhooks.ConstructEvent(…)` | `WebhookEvent` |
 | `client.Webhooks.VerifySignature(…)` | `bool` |
 | `WayaQuickClient.GenerateReference(prefix)` | `string` |
@@ -285,10 +286,18 @@ var evt = client.Webhooks.ConstructEvent(rawBody, timestamp, signature);
 
 ## BVN identity check
 
+Verification takes two steps: submitting the BVN sends an OTP to the phone number registered against it, and the holder's record is returned once that OTP is verified.
+
 ```csharp
-var identity = await client.Identity.VerifyBvnAsync(new()
+// Step 1: Initiate verification (sends OTP)
+var started = await client.Identity.InitiateBvnAsync("22222222222"); // exactly 11 digits
+Console.WriteLine($"OTP sent to {started.PhoneNumber}, session: {started.Reference}");
+
+// Step 2: Complete verification with OTP
+var identity = await client.Identity.CompleteBvnAsync(new()
 {
-    Bvn = "22500809037", // exactly 11 digits — validated locally before the request
+    Reference = started.Reference,
+    Otp = "123456"
 });
 Console.WriteLine($"{identity.FirstName} {identity.LastName}");
 ```
