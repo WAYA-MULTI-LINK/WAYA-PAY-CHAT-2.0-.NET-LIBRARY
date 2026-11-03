@@ -5,7 +5,7 @@
     <RootNamespace>WayaQuick</RootNamespace>
     <AssemblyName>WayaQuick</AssemblyName>
     <PackageId>WayaQuick.Integration</PackageId>
-    <Version>2.0.1</Version>
+    <Version>2.0.2</Version>
     <Description>.NET client for the WayaQuick Merchant API v2: collect, payout, accounts, identity.</Description>
     <PackageTags>wayaquick;wayapay;payments;payout;collect;bvn;nigeria;fintech</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

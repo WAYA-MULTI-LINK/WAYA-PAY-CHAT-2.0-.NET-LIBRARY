@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.2] - 2026-11-03
+
+### Added
+- Added two-step BVN verification: `Identity.InitiateBvnAsync()` (`POST /identity-verification/bvn/initiate`) and `Identity.CompleteBvnAsync()` (`POST /identity-verification/bvn/complete`) with OTP verification.
+- Added `ExpiresAt` property to `CollectionResponseModel`.
+
+### Deprecated
+- `Identity.VerifyBvnAsync()` is now deprecated in favor of `InitiateBvnAsync()` and `CompleteBvnAsync()`.
+
 ## [2.0.1] - 2026-07-17
 
 First version published to [NuGet](https://www.nuget.org/packages/WayaQuick.Integration) via the automated release pipeline. No functional changes.
