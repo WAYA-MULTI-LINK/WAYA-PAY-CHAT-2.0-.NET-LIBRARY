@@ -33,12 +33,9 @@ try
     });
     Console.WriteLine($"Resolved: {verified.AccountName} @ {verified.BankName} ({verified.ResponseCode})");
 
-    // 3. BVN identity check
-    var identity = await client.Identity.VerifyBvnAsync(new BvnIdentityRequestModel
-    {
-        Bvn = "22500809037",
-    });
-    Console.WriteLine($"BVN holder: {identity.FirstName} {identity.LastName} | watch-listed: {identity.WatchListed}");
+    // 3. BVN identity check (Initiate OTP flow)
+    var bvnSession = await client.Identity.InitiateBvnAsync("22500809037");
+    Console.WriteLine($"BVN OTP sent to: {bvnSession.PhoneNumber} (Session: {bvnSession.Reference})");
 
     // 4. Initiate a payout — always verify the account first (step 2)
     var payout = await client.Payouts.InitiateAsync(new PayoutRequestModel
